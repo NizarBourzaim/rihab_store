@@ -7,7 +7,7 @@ import { useCart } from "../../context/CartContext";
 import API_URL from "../../utils/api";
 
 export default function CartPage() {
-  const { cartItems = [], removeFromCart, updateQty } = useCart();
+  const { cartItems = [], removeFromCart, updateQty, clearCart } = useCart();
 
   const [customer, setCustomer] = useState({
     customerName: "",
@@ -17,6 +17,7 @@ export default function CartPage() {
 
   const [orderInfo, setOrderInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     const stored =
@@ -40,7 +41,7 @@ export default function CartPage() {
     0
   );
 
-  const handleWhatsAppOrder = async () => {
+  const handleOrder = async () => {
     if (!customer.customerName || !customer.customerPhone || !customer.customerAddress) {
       alert("Please complete your name, phone, and address.");
       return;
@@ -74,8 +75,8 @@ export default function CartPage() {
       );
 
       setOrderInfo(data);
-
-      window.open(data.whatsappUrl, "_blank");
+      setIsSuccess(true);
+      clearCart();
     } catch (error) {
       alert(error.response?.data?.message || "Failed to create order.");
     } finally {
@@ -87,7 +88,35 @@ export default function CartPage() {
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">Cart</h1>
 
-      {cartItems.length === 0 ? (
+      {isSuccess ? (
+        <div className="glass rounded-[32px] p-10 text-center animate-fade-in">
+          <div className="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-4">Order Successful!</h2>
+          <p className="text-white/70 text-lg mb-8 max-w-md mx-auto">
+            Thank you for your order. Your order number is <span className="text-[#D4AF37] font-mono font-bold">#{orderInfo?.orderNumber}</span>. We will contact you soon.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/products" className="btn-main px-8">
+              Continue Shopping
+            </Link>
+            {orderInfo?.downloadUrl && (
+              <a 
+                href={`${API_URL}${orderInfo.downloadUrl}`}
+                className="btn-secondary px-8 flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Receipt
+              </a>
+            )}
+          </div>
+        </div>
+      ) : cartItems.length === 0 ? (
         <div className="glass rounded-3xl p-8 text-center text-white">
           <p className="text-lg text-white/70">Your cart is empty.</p>
           <Link
@@ -186,24 +215,12 @@ export default function CartPage() {
             <p className="mt-4 text-xl font-semibold bg-white/5 inline-block px-4 py-2 rounded-xl border border-white/10">Total: <span className="text-gold-gradient">{total} MAD</span></p>
 
             <button
-              onClick={handleWhatsAppOrder}
+              onClick={handleOrder}
               disabled={loading}
               className="block mt-6 bg-[#25D366] hover:opacity-90 text-white font-bold px-6 py-4 rounded-2xl disabled:opacity-60 transition-opacity"
             >
               {loading ? "Creating Order..." : "Order Now"}
             </button>
-
-            {orderInfo && (
-              <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-[rgba(212,175,55,0.3)]">
-                <p className="font-semibold text-[rgba(251,245,183,0.9)]">Order Number: {orderInfo.orderNumber}</p>
-                <a
-                  href={`http://localhost:5050${orderInfo.downloadUrl}`}
-                  className="inline-block mt-4 btn-secondary text-sm"
-                >
-                  Download Order Info
-                </a>
-              </div>
-            )}
           </div>
         </>
       )}

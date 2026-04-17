@@ -27,7 +27,7 @@ export default function AdminPage() {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get("http://localhost:5050/api/products");
+      const { data } = await axios.get(`${API_URL}/api/products`);
       setProducts(data);
     } catch (err) {
       setError("Failed to load products.");
@@ -83,7 +83,7 @@ export default function AdminPage() {
 
       if (editingId) {
         await axios.put(
-          `http://localhost:5050/api/products/${editingId}`,
+          `${API_URL}/api/products/${editingId}`,
           form,
           {
             headers: {
@@ -133,7 +133,7 @@ export default function AdminPage() {
       setError("");
       setSuccess("");
 
-      await axios.delete(`http://localhost:5050/api/products/${id}`, {
+      await axios.delete(`${API_URL}/api/products/${id}`, {
         headers: {
           Authorization: `Bearer ${userInfo.token}`,
         },
@@ -161,7 +161,7 @@ export default function AdminPage() {
       setError("");
       setSuccess("");
       await axios.put(
-        `http://localhost:5050/api/orders/${orderId}/status`,
+        `${API_URL}/api/orders/${orderId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${userInfo.token}` } }
       );
@@ -201,7 +201,7 @@ export default function AdminPage() {
     try {
       setError("");
       setSuccess("");
-      await axios.post("http://localhost:5050/api/orders/bulk-delete", {
+      await axios.post(`${API_URL}/api/orders/bulk-delete`, {
         orderIds: selectedOrders
       }, {
         headers: { Authorization: `Bearer ${userInfo.token}` }
@@ -225,7 +225,7 @@ export default function AdminPage() {
     try {
       setError("");
       setSuccess("");
-      await axios.delete(`http://localhost:5050/api/orders/${id}`, {
+      await axios.delete(`${API_URL}/api/orders/${id}`, {
         headers: { Authorization: `Bearer ${userInfo.token}` }
       });
       setSuccess("Order deleted successfully.");

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
+import API_URL from "../../utils/api";
 
 export default function ProfilePage() {
   const [form, setForm] = useState({
@@ -25,7 +26,7 @@ export default function ProfilePage() {
           return;
         }
 
-        const { data } = await axios.get("http://localhost:5000/api/auth/me", {
+        const { data } = await axios.get(`${API_URL}/api/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -57,7 +58,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("token");
 
       const { data } = await axios.put(
-        "http://localhost:5000/api/auth/me",
+        `${API_URL}/api/auth/me`,
         {
           name: form.name,
           email: form.email,

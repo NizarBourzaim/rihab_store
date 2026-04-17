@@ -22,7 +22,7 @@ export default function AdminPage() {
 
   const fetchProducts = async () => {
     try {
-      const { data } = await axios.get("http://localhost:5000/api/products");
+      const { data } = await axios.get("http://localhost:5050/api/products");
       setProducts(data);
     } catch (error) {
       console.error(error);
@@ -59,7 +59,7 @@ export default function AdminPage() {
       const token = localStorage.getItem("token");
 
       await axios.post(
-        "http://localhost:5000/api/products",
+        "http://localhost:5050/api/products",
         {
           ...form,
           price: Number(form.price),
@@ -93,7 +93,7 @@ export default function AdminPage() {
     try {
       const token = localStorage.getItem("token");
 
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
+      await axios.delete(`http://localhost:5050/api/products/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
