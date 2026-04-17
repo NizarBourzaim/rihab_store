@@ -5,6 +5,7 @@ import axios from "axios";
 import Navbar from "../../../components/Navbar";
 import { useCart } from "../../../context/CartContext";
 import { useParams } from "next/navigation";
+import API_URL from "../../../utils/api";
 
 export default function ProductDetailsPage() {
   const { addToCart } = useCart();
@@ -17,7 +18,7 @@ export default function ProductDetailsPage() {
     const fetchProduct = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:5000/api/products/${params.id}`
+          `${API_URL}/api/products/${params.id}`
         );
         setProduct(data);
       } catch (error) {
