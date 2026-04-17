@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import axios from "axios";
+import { useCart } from "../../context/CartContext";
+import API_URL from "../../utils/api";
+
+export default function CartPage() {
+  const { cartItems = [], removeFromCart, updateQty } = useCart();
+
+  const [customer, setCustomer] = useState({
+    customerName: "",
+    customerPhone: "",
+    customerAddress: "",
+  });
+
+  const [orderInfo, setOrderInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const stored =
+      typeof window !== "undefined"
+        ? localStorage.getItem("userInfo")
+        : null;
+
+    if (stored) {
+      const userInfo = JSON.parse(stored);
+
+      setCustomer({
+        customerName: userInfo.name || "",
+        customerPhone: userInfo.phone || "",
+        customerAddress: userInfo.address || "",
+      });
+    }
+  }, []);
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
+    0
+  );
+
+  const handleWhatsAppOrder = async () => {
+    if (!customer.customerName || !customer.customerPhone || !customer.customerAddress) {
+      alert("Please complete your name, phone, and address.");
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        customerName: customer.customerName,
+        customerPhone: customer.customerPhone,
+        customerAddress: customer.customerAddress,
+        items: cartItems.map((item) => ({
+          productId: item._id,
+          name: item.name,
+          price: Number(item.price || 0),
+          qty: Number(item.qty || 1),
+          image: item.image || "",
+        })),
+        total,
+      };
+
+      const { data } = await axios.post(
+        `${API_URL}/api/orders/whatsapp`,
+        payload
+      );
+
+      setOrderInfo(data);
+
+      window.open(data.whatsappUrl, "_blank");
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to create order.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6 text-gold-gradient">Cart</h1>
+
+      {cartItems.length === 0 ? (
+        <div className="glass rounded-3xl p-8 text-center text-white">
+          <p className="text-lg text-white/70">Your cart is empty.</p>
+          <Link
+            href="/products"
+            className="inline-block mt-6 btn-main"
+          >
+            Go to Products
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-5">
+            {cartItems.map((item) => (
+              <div
+                key={item._id}
+                className="glass rounded-3xl p-5 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+              >
+                <div className="flex items-center gap-5">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-24 h-24 object-cover rounded-2xl opacity-90"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center text-sm text-white/50">
+                      No image
+                    </div>
+                  )}
+
+                  <div>
+                    <h2 className="font-semibold text-xl">{item.name}</h2>
+                    <p className="text-white/60 mt-1">{item.description || "No description"}</p>
+                    <p className="font-bold mt-2 text-gold-gradient">{item.price} MAD</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.qty}
+                    onChange={(e) => updateQty(item._id, e.target.value)}
+                    className="border border-white/20 bg-white/5 rounded-2xl p-3 w-20 text-white text-center focus:border-[rgba(212,175,55,0.5)] outline-none"
+                  />
+
+                  <button
+                    onClick={() => removeFromCart(item._id)}
+                    className="bg-red-600/80 hover:bg-red-600 text-white px-5 py-3 rounded-2xl transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 glass rounded-3xl p-8 text-white">
+            <h2 className="text-2xl font-bold text-gold-gradient">Customer Info</h2>
+
+            <div className="grid gap-5 mt-6">
+              <input
+                type="text"
+                placeholder="Your name"
+                value={customer.customerName}
+                onChange={(e) =>
+                  setCustomer({ ...customer, customerName: e.target.value })
+                }
+                className="border border-white/20 bg-white/5 rounded-2xl p-4 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+              />
+
+              <input
+                type="text"
+                placeholder="Your phone"
+                value={customer.customerPhone}
+                onChange={(e) =>
+                  setCustomer({ ...customer, customerPhone: e.target.value })
+                }
+                className="border border-white/20 bg-white/5 rounded-2xl p-4 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+              />
+
+              <textarea
+                placeholder="Your address"
+                value={customer.customerAddress}
+                onChange={(e) =>
+                  setCustomer({ ...customer, customerAddress: e.target.value })
+                }
+                className="border border-white/20 bg-white/5 rounded-2xl p-4 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all resize-none"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 glass rounded-3xl p-8 text-white">
+            <h2 className="text-2xl font-bold text-gold-gradient">Order Summary</h2>
+            <p className="mt-4 text-xl font-semibold bg-white/5 inline-block px-4 py-2 rounded-xl border border-white/10">Total: <span className="text-gold-gradient">{total} MAD</span></p>
+
+            <button
+              onClick={handleWhatsAppOrder}
+              disabled={loading}
+              className="block mt-6 bg-[#25D366] hover:opacity-90 text-white font-bold px-6 py-4 rounded-2xl disabled:opacity-60 transition-opacity"
+            >
+              {loading ? "Creating Order..." : "Order Now"}
+            </button>
+
+            {orderInfo && (
+              <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-[rgba(212,175,55,0.3)]">
+                <p className="font-semibold text-[rgba(251,245,183,0.9)]">Order Number: {orderInfo.orderNumber}</p>
+                <a
+                  href={`http://localhost:5050${orderInfo.downloadUrl}`}
+                  className="inline-block mt-4 btn-secondary text-sm"
+                >
+                  Download Order Info
+                </a>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
