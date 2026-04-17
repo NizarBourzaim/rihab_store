@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Order = require("../models/Order");
+const Order = require("../models/order");
 const { appendOrderToExcel } = require("../utils/orderExcel");
 const { appendOrderToGoogleSheets, updateOrderStatusInGoogleSheets } = require("../utils/googleSheets");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
