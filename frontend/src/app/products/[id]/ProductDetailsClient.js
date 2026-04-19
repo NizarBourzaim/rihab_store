@@ -7,10 +7,10 @@ import { useCart } from "../../../context/CartContext";
 import { useParams } from "next/navigation";
 import API_URL from "../../../utils/api";
 
-export default function ProductDetailsClient() {
+export default function ProductDetailsClient({ initialProduct }) {
   const { addToCart } = useCart();
   const params = useParams();
-  const [product, setProduct] = useState(null);
+  const [product, setProduct] = useState(initialProduct);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -22,10 +22,11 @@ export default function ProductDetailsClient() {
         );
         setProduct(data);
       } catch (error) {
-        console.error(error);
+        console.error("Refresh failed:", error);
       }
     };
 
+    // Even if we have initialProduct, we refresh to get the absolute latest (e.g. from an edit)
     fetchProduct();
   }, [params?.id]);
 

@@ -1,15 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../context/CartContext";
-
 import { motion } from "framer-motion";
+import axios from "axios";
+import API_URL from "../../utils/api";
 
 export default function ProductsClient({ initialProducts = [] }) {
-  const [products] = useState(initialProducts);
+  const [products, setProducts] = useState(initialProducts);
   const [isClicked, setIsClicked] = useState(false);
   const router = useRouter();
+
+  // Sync with backend on mount to catch any recent edits
+  useEffect(() => {
+    const refreshProducts = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/products`);
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to refresh products:", err);
+      }
+    };
+    refreshProducts();
+  }, []);
   
   const cart = useCart() || {};
   const { addToCart } = cart;

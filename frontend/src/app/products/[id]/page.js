@@ -18,6 +18,18 @@ export async function generateStaticParams() {
   }
 }
 
-export default function Page() {
-  return <ProductDetailsClient />;
+async function getProduct(id) {
+  try {
+    const { data } = await axios.get(`${API_URL}/api/products/${id}`);
+    return data;
+  } catch (error) {
+    return null;
+  }
+}
+
+export default async function Page({ params }) {
+  const { id } = await params;
+  const product = await getProduct(id);
+  
+  return <ProductDetailsClient initialProduct={product} />;
 }
