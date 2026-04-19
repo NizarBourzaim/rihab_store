@@ -497,18 +497,21 @@ export default function AdminPage() {
                   onChange={handleSelectAllOrders}
                 />
               </th>
-              <th className="p-5 font-semibold text-white/70">Order #</th>
-              <th className="p-5 font-semibold text-white/70">Customer</th>
-              <th className="p-5 font-semibold text-white/70">Total</th>
-              <th className="p-5 font-semibold text-white/70">Date</th>
+              <th className="p-5 font-semibold text-white/70">Order Number</th>
+              <th className="p-5 font-semibold text-white/70">Customer Name</th>
+              <th className="p-5 font-semibold text-white/70">Phone</th>
+              <th className="p-5 font-semibold text-white/70">Address</th>
+              <th className="p-5 font-semibold text-white/70">Items</th>
+              <th className="p-5 font-semibold text-white/70">Total (MAD)</th>
               <th className="p-5 font-semibold text-white/70">Status</th>
+              <th className="p-5 font-semibold text-white/70">Date</th>
               <th className="p-5 font-semibold text-white/70 text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan="7" className="p-10 text-center text-white/50">No orders found matching your search.</td>
+                <td colSpan="10" className="p-10 text-center text-white/50">No orders found matching your search.</td>
               </tr>
             ) : (
               filteredOrders.map((order) => (
@@ -522,14 +525,15 @@ export default function AdminPage() {
                     />
                   </td>
                   <td className="p-5 font-mono text-sm text-[rgba(251,245,183,0.8)]">{order.orderNumber}</td>
-                  <td className="p-5">
-                    <div className="font-medium">{order.customerName}</div>
-                    <div className="text-sm text-white/50">{order.customerPhone}</div>
+                  <td className="p-5 font-medium">{order.customerName}</td>
+                  <td className="p-5 text-sm text-white/70">{order.customerPhone}</td>
+                  <td className="p-5 text-sm text-white/50 max-w-[200px] truncate" title={order.customerAddress}>
+                    {order.customerAddress || "---"}
+                  </td>
+                  <td className="p-5 text-xs text-white/60 max-w-[150px] truncate" title={order.items?.map(i => `${i.name} (x${i.qty || 1})`).join(", ")}>
+                    {order.items?.map(i => i.name).join(", ") || "No items"}
                   </td>
                   <td className="p-5 font-bold text-gold-gradient">{order.total} MAD</td>
-                  <td className="p-5 text-sm text-white/60">
-                    {new Date(order.createdAt).toLocaleString()}
-                  </td>
                   <td className="p-4">
                     <select
                       value={order.status || "pending"}
@@ -548,6 +552,9 @@ export default function AdminPage() {
                       <option value="delivered" className="bg-white text-black font-semibold">🟢 Delivered</option>
                       <option value="canceled" className="bg-white text-black font-semibold">🔴 Canceled</option>
                     </select>
+                  </td>
+                  <td className="p-5 text-sm text-white/60">
+                    {new Date(order.createdAt).toLocaleString()}
                   </td>
                    <td className="p-5 text-center flex items-center justify-center gap-2">
                     <button
