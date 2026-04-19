@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../context/CartContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import API_URL from "../../utils/api";
 
 export default function ProductsClient({ initialProducts = [] }) {
   const [products, setProducts] = useState(initialProducts);
   const [isClicked, setIsClicked] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   const router = useRouter();
 
   // Sync with backend on mount to catch any recent edits
@@ -73,19 +74,27 @@ export default function ProductsClient({ initialProducts = [] }) {
             key={product._id} 
             variants={itemVariants}
             whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            className="glass rounded-3xl p-4 text-white shadow-xl flex flex-col h-full"
+            className="glass rounded-3xl p-4 text-white shadow-xl flex flex-col h-full group"
           >
             {product.image && (
-              <div className="relative overflow-hidden rounded-2xl mb-4 h-48">
+              <div 
+                className="relative overflow-hidden rounded-2xl mb-4 h-64 bg-black/20 cursor-zoom-in"
+                onClick={() => setSelectedImage(product.image)}
+              >
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover opacity-90 transition-transform duration-500 hover:scale-110"
+                  className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-xs font-bold border border-white/20 transition-opacity">
+                    Click to Expand
+                  </span>
+                </div>
               </div>
             )}
             <h2 className="text-xl font-semibold">{product.name}</h2>
-            <p className="text-white/60 mt-1 text-sm flex-grow">{product.description}</p>
+            <p className="text-white/60 mt-1 text-sm flex-grow line-clamp-2">{product.description}</p>
             <p className="font-bold mt-4 text-gold-gradient text-lg">{product.price} MAD</p>
             <button
               onClick={() => addToCart(product)}
@@ -96,6 +105,38 @@ export default function ProductsClient({ initialProducts = [] }) {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Full Screen Image Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-5xl w-full h-[80vh]"
+            >
+              <img
+                src={selectedImage}
+                alt="Full preview"
+                className="w-full h-full object-contain"
+              />
+              <button 
+                className="absolute top-[-40px] right-0 text-white text-4xl hover:text-gold transition-colors"
+                onClick={() => setSelectedImage(null)}
+              >
+                &times;
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {totalQty > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
