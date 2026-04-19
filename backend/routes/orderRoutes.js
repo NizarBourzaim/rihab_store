@@ -96,24 +96,25 @@ router.get("/:id/download", async (req, res) => {
     // Header / Brand Logo
     const logoPath = path.join(__dirname, "..", "assets", "logo.png");
     const logoWidth = 150;
+    const logoX = 50;
     if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, (doc.page.width - logoWidth) / 2, 40, { width: logoWidth });
+      doc.image(logoPath, logoX, 40, { width: logoWidth });
       doc.moveDown(5); 
     } else {
       doc.fillColor("#BF953F")
          .fontSize(24)
-         .text("RINIFAZA STORE", 50, 45, { align: "center" });
+         .text("RINIFAZA STORE", logoX, 45, { align: "left" });
       doc.moveDown();
     }
 
     doc.fillColor("#BF953F") // GOLD
        .fontSize(10)
        .font("Helvetica-Bold")
-       .text("luxurious - islamic - fashion", 50, 105, { align: "center" });
+       .text("luxurious - islamic - fashion", logoX, 105, { width: logoWidth, align: "center" });
 
     doc.font("Helvetica")
        .fillColor("#444444")
-       .text("Morocco", 50, 120, { align: "center" })
+       .text("Morocco", logoX, 120, { width: logoWidth, align: "center" })
        .moveDown();
 
     // Receipt Title
