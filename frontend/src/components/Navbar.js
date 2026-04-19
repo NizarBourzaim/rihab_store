@@ -1,16 +1,13 @@
-"use client";
-
-import Link from "next/link";
-import Image from "next/image";
-import { useCart } from "../context/CartContext";
-import { useEffect, useState } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Navbar() {
+  const { t, language, changeLanguage } = useLanguage();
   const cart = useCart() || {};
   const cartItems = Array.isArray(cart.cartItems) ? cart.cartItems : [];
 
   const [userInfo, setUserInfo] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
 
   const loadUserInfo = () => {
     const stored =
@@ -45,6 +42,12 @@ export default function Navbar() {
     window.location.href = "/";
   };
 
+  const languages = [
+    { code: "en", label: "EN", flag: "🇬🇧" },
+    { code: "fr", label: "FR", flag: "🇫🇷" },
+    { code: "ar", label: "AR", flag: "🇲🇦" },
+  ];
+
   return (
     <header className="w-full border-b border-white/10 backdrop-blur sticky top-0 z-50">
       <div className="container-custom flex justify-between items-center py-4">
@@ -54,20 +57,20 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          <Link href="/" className="hover:text-gold-gradient transition-all">Home</Link>
-          <Link href="/products" className="hover:text-gold-gradient transition-all">Products</Link>
-          <Link href="/cart" className="hover:text-gold-gradient transition-all">Cart</Link>
+          <Link href="/" className="hover:text-gold-gradient transition-all">{t("home")}</Link>
+          <Link href="/products" className="hover:text-gold-gradient transition-all">{t("products")}</Link>
+          <Link href="/cart" className="hover:text-gold-gradient transition-all">{t("cart")}</Link>
 
           {!userInfo ? (
             <>
-              <Link href="/login" className="hover:text-gold-gradient transition-all">Login</Link>
-              <Link href="/register" className="hover:text-gold-gradient transition-all">Register</Link>
+              <Link href="/login" className="hover:text-gold-gradient transition-all">{t("login")}</Link>
+              <Link href="/register" className="hover:text-gold-gradient transition-all">{t("register")}</Link>
             </>
           ) : (
             <>
               {(userInfo.isAdmin || userInfo.isOrderManager) && (
                 <Link href="/admin" className="hover:text-gold-gradient transition-all">
-                  {userInfo.isAdmin ? "Admin" : "Order Management"}
+                  {userInfo.isAdmin ? t("admin") : t("orderManagement")}
                 </Link>
               )}
               <Link href="/profile" className="text-white/70 hover:text-white transition-all">{userInfo.name}</Link>
@@ -75,10 +78,39 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-3 py-1.5 rounded-lg transition-all"
               >
-                Logout
+                {t("logout")}
               </button>
             </>
           )}
+
+          {/* Language Switcher */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg text-white transition-all"
+            >
+              <span>{languages.find(l => l.code === language)?.flag}</span>
+              <span className="font-semibold">{languages.find(l => l.code === language)?.label}</span>
+            </button>
+            
+            {isLangOpen && (
+              <div className="absolute top-full mt-2 right-0 bg-black/90 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl z-[60] min-w-[120px]">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                      setIsLangOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gold/10 transition-colors text-left ${language === lang.code ? 'text-gold' : 'text-white/70'}`}
+                  >
+                    <span>{lang.flag}</span>
+                    <span className="font-medium">{lang.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <Link href="/cart" className="relative text-xl hover:scale-110 transition-transform">
             🛒
@@ -92,6 +124,33 @@ export default function Navbar() {
 
         {/* Mobile Nav Toggle */}
         <div className="md:hidden flex items-center gap-4">
+          {/* Mobile Language Switcher */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg text-white text-sm"
+            >
+              <span>{languages.find(l => l.code === language)?.flag}</span>
+            </button>
+            {isLangOpen && (
+              <div className="absolute top-full mt-2 right-0 bg-black border border-white/10 rounded-xl overflow-hidden shadow-2xl z-[60] min-w-[100px]">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      changeLanguage(lang.code);
+                      setIsLangOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gold/10 transition-colors"
+                  >
+                    <span>{lang.flag}</span>
+                    <span className="text-white text-sm">{lang.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Link href="/cart" className="relative text-xl mr-2">
             🛒
             {totalQty > 0 && (
@@ -118,28 +177,28 @@ export default function Navbar() {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl py-4 px-6 flex flex-col gap-4">
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">Home</Link>
-          <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">Products</Link>
-          <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">Cart</Link>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("home")}</Link>
+          <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("products")}</Link>
+          <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("cart")}</Link>
 
           {!userInfo ? (
             <div className="flex flex-col gap-3 mt-2">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-2 bg-white/10 rounded-xl">Login</Link>
-              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-2 btn-main">Register</Link>
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-2 bg-white/10 rounded-xl">{t("login")}</Link>
+              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-2 btn-main">{t("register")}</Link>
             </div>
           ) : (
             <div className="flex flex-col gap-3 mt-2">
               {(userInfo.isAdmin || userInfo.isOrderManager) && (
                 <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 text-gold-gradient font-semibold">
-                  {userInfo.isAdmin ? "Admin Dashboard" : "Order Management Dashboard"}
+                  {userInfo.isAdmin ? t("adminDashboard") : t("orderManagementDashboard")}
                 </Link>
               )}
-              <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5">Profile ({userInfo.name})</Link>
+              <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5">{t("profile")} ({userInfo.name})</Link>
               <button
                 onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
                 className="text-center py-2 mt-2 bg-red-600/20 text-red-500 rounded-xl"
               >
-                Logout
+                {t("logout")}
               </button>
             </div>
           )}

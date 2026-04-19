@@ -1,10 +1,8 @@
-"use client";
-
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function Hero() {
+  const { t } = useLanguage();
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0 hero-grid opacity-40"></div>
@@ -35,8 +33,7 @@ export default function Hero() {
             transition={{ duration: 0.9 }}
             className="mt-6 max-w-2xl mx-auto text-[rgba(251,245,183,0.7)] text-base md:text-lg leading-8"
           >
-            Discover a sleek shopping experience with premium visuals, modern
-            interface, and smooth navigation built for style and performance. All in one place.
+            {t("heroSubtitle")}
           </motion.p>
 
           <motion.div
@@ -46,11 +43,11 @@ export default function Hero() {
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link href="/products" className="btn-main">
-              Check our Products
+              {t("checkProducts")}
             </Link>
 
             <Link href="/register" className="btn-secondary">
-              Register Now !
+              {t("registerNow")}
             </Link>
           </motion.div>
 
@@ -60,27 +57,27 @@ export default function Hero() {
             transition={{ duration: 1.25 }}
             className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-5"
           >
-            <div className="glass rounded-3xl p-6 text-left">
-              <p className="text-sm text-white/50">Collections</p>
-              <h3 className="mt-2 text-2xl font-semibold">Curated Drops</h3>
+            <div className="glass rounded-3xl p-6 text-start">
+              <p className="text-sm text-white/50">{t("feature1Sub")}</p>
+              <h3 className="mt-2 text-2xl font-semibold">{t("feature1Title")}</h3>
               <p className="mt-3 text-white/60 leading-7">
-                Carefully selected products with a premium visual style.
+                {t("feature1Desc")}
               </p>
             </div>
 
-            <div className="glass rounded-3xl p-6 text-left">
-              <p className="text-sm text-white/50">Experience</p>
-              <h3 className="mt-2 text-2xl font-semibold">Smooth Shopping</h3>
+            <div className="glass rounded-3xl p-6 text-start">
+              <p className="text-sm text-white/50">{t("feature2Sub")}</p>
+              <h3 className="mt-2 text-2xl font-semibold">{t("feature2Title")}</h3>
               <p className="mt-3 text-white/60 leading-7">
-                Fast navigation, modern cards, and a clean dark interface.
+                {t("feature2Desc")}
               </p>
             </div>
 
-            <div className="glass rounded-3xl p-6 text-left">
-              <p className="text-sm text-white/50">Quality</p>
-              <h3 className="mt-2 text-2xl font-semibold">Premium Feel</h3>
+            <div className="glass rounded-3xl p-6 text-start">
+              <p className="text-sm text-white/50">{t("feature3Sub")}</p>
+              <h3 className="mt-2 text-2xl font-semibold">{t("feature3Title")}</h3>
               <p className="mt-3 text-white/60 leading-7">
-                A stylish storefront inspired by sleek portfolio aesthetics.
+                {t("feature3Desc")}
               </p>
             </div>
           </motion.div>

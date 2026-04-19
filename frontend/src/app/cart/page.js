@@ -6,7 +6,10 @@ import axios from "axios";
 import { useCart } from "../../context/CartContext";
 import API_URL from "../../utils/api";
 
+import { useLanguage } from "../../context/LanguageContext";
+
 export default function CartPage() {
+  const { t } = useLanguage();
   const { cartItems = [], removeFromCart, updateQty, clearCart } = useCart();
 
   const [customer, setCustomer] = useState({
@@ -31,12 +34,12 @@ export default function CartPage() {
 
   const handleOrder = async () => {
     if (!customer.customerName || !customer.customerPhone || !customer.customerAddress) {
-      alert("Please complete your name, phone, and address.");
+      alert(t("fillAllFields"));
       return;
     }
 
     if (cartItems.length === 0) {
-      alert("Your cart is empty.");
+      alert(t("emptyCart"));
       return;
     }
 
@@ -74,7 +77,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-gold-gradient">Cart</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("cart")}</h1>
 
       {isSuccess ? (
         <div className="glass rounded-[32px] p-10 text-center animate-fade-in">
@@ -83,13 +86,13 @@ export default function CartPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4">Order Successful!</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">{t("orderSuccess")}</h2>
           <p className="text-white/70 text-lg mb-8 max-w-md mx-auto">
-            Thank you for your order. Your order number is <span className="text-[#D4AF37] font-mono font-bold">#{orderInfo?.orderNumber}</span>. We will contact you soon.
+            {t("orderNumber")} <span className="text-[#D4AF37] font-mono font-bold">#{orderInfo?.orderNumber}</span>. {t("contactSoon")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/products" className="btn-main px-8">
-              Continue Shopping
+              {t("continueShopping")}
             </Link>
             {orderInfo?.downloadUrl && (
               <a 
@@ -99,19 +102,19 @@ export default function CartPage() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Download Receipt
+                {t("downloadReceipt")}
               </a>
             )}
           </div>
         </div>
       ) : cartItems.length === 0 ? (
         <div className="glass rounded-3xl p-8 text-center text-white">
-          <p className="text-lg text-white/70">Your cart is empty.</p>
+          <p className="text-lg text-white/70">{t("emptyCart")}</p>
           <Link
             href="/products"
             className="inline-block mt-6 btn-main"
           >
-            Go to Products
+            {t("goToProducts")}
           </Link>
         </div>
       ) : (
@@ -137,8 +140,8 @@ export default function CartPage() {
 
                   <div>
                     <h2 className="font-semibold text-xl">{item.name}</h2>
-                    <p className="text-white/60 mt-1">{item.description || "No description"}</p>
-                    <p className="font-bold mt-2 text-gold-gradient">{item.price} MAD</p>
+                    <p className="text-white/60 mt-1 line-clamp-1">{item.description}</p>
+                    <p className="font-bold mt-2 text-gold-gradient">{item.price} {t("mad")}</p>
                   </div>
                 </div>
 
@@ -155,7 +158,7 @@ export default function CartPage() {
                     onClick={() => removeFromCart(item._id)}
                     className="bg-red-600/80 hover:bg-red-600 text-white px-5 py-3 rounded-2xl transition-colors"
                   >
-                    Remove
+                    {t("remove")}
                   </button>
                 </div>
               </div>
@@ -163,12 +166,12 @@ export default function CartPage() {
           </div>
 
           <div className="mt-8 glass rounded-3xl p-8 text-white">
-            <h2 className="text-2xl font-bold text-gold-gradient">Customer Info</h2>
+            <h2 className="text-2xl font-bold text-gold-gradient">{t("customerInfo")}</h2>
 
             <div className="grid gap-5 mt-6">
               <input
                 type="text"
-                placeholder="Your name"
+                placeholder={t("yourName")}
                 value={customer.customerName}
                 onChange={(e) =>
                   setCustomer({ ...customer, customerName: e.target.value })
@@ -178,7 +181,7 @@ export default function CartPage() {
 
               <input
                 type="text"
-                placeholder="Your phone"
+                placeholder={t("yourPhone")}
                 value={customer.customerPhone}
                 onChange={(e) =>
                   setCustomer({ ...customer, customerPhone: e.target.value })
@@ -187,7 +190,7 @@ export default function CartPage() {
               />
 
               <textarea
-                placeholder="Your address"
+                placeholder={t("yourAddress")}
                 value={customer.customerAddress}
                 onChange={(e) =>
                   setCustomer({ ...customer, customerAddress: e.target.value })
@@ -199,8 +202,8 @@ export default function CartPage() {
           </div>
 
           <div className="mt-8 glass rounded-3xl p-8 text-white">
-            <h2 className="text-2xl font-bold text-gold-gradient">Order Summary</h2>
-            <p className="mt-4 text-xl font-semibold bg-white/5 inline-block px-4 py-2 rounded-xl border border-white/10">Total: <span className="text-gold-gradient">{total} MAD</span></p>
+            <h2 className="text-2xl font-bold text-gold-gradient">{t("orderSummary")}</h2>
+            <p className="mt-4 text-xl font-semibold bg-white/5 inline-block px-4 py-2 rounded-xl border border-white/10">{t("total")}: <span className="text-gold-gradient">{total} {t("mad")}</span></p>
 
             <div className="mt-6">
               <button
@@ -208,7 +211,7 @@ export default function CartPage() {
                 disabled={loading}
                 className="btn-main px-10 py-4 disabled:opacity-60"
               >
-                {loading ? "Creating Order..." : "Order Now"}
+                {loading ? t("creatingOrder") : t("orderNow")}
               </button>
             </div>
           </div>

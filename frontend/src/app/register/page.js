@@ -1,11 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import API_URL from "../../utils/api";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function RegisterPage() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -27,11 +23,11 @@ export default function RegisterPage() {
 
       localStorage.setItem("userInfo", JSON.stringify(data));
       window.dispatchEvent(new Event("userInfoUpdated"));
-      setMessage("Account created successfully");
+      setMessage(t("accountCreatedSuccess"));
 
       window.location.href = "/";
     } catch (error) {
-      setMessage(error.response?.data?.message || "Registration failed");
+      setMessage(error.response?.data?.message || t("registrationFailed"));
     } finally {
       setLoading(false);
     }
@@ -42,7 +38,7 @@ export default function RegisterPage() {
       <div className="container-custom relative z-10">
         <div className="max-w-md mx-auto glass rounded-[32px] p-8 md:p-10">
           <h1 className="mt-5 text-4xl font-semibold tracking-tight text-gold-gradient">
-            Join Rinifaza Store
+            {t("joinRinifaza")}
           </h1>
 
           <form onSubmit={handleSubmit} className="mt-8">
@@ -53,7 +49,7 @@ export default function RegisterPage() {
                 onChange={(e) =>
                   setForm({ ...form, name: e.target.value })
                 }
-                placeholder="Enter your full name"
+                placeholder={t("enterFullName")}
                 className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
                 required
               />
@@ -64,7 +60,7 @@ export default function RegisterPage() {
                 onChange={(e) =>
                   setForm({ ...form, email: e.target.value })
                 }
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
                 required
               />
@@ -75,7 +71,7 @@ export default function RegisterPage() {
                 onChange={(e) =>
                   setForm({ ...form, password: e.target.value })
                 }
-                placeholder="Create a strong password"
+                placeholder={t("passwordPlaceholder")}
                 className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
                 required
               />
@@ -86,7 +82,7 @@ export default function RegisterPage() {
                 onChange={(e) =>
                   setForm({ ...form, phone: e.target.value })
                 }
-                placeholder="Your phone number"
+                placeholder={t("yourPhone")}
                 className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
                 required
               />
@@ -96,7 +92,7 @@ export default function RegisterPage() {
                 onChange={(e) =>
                   setForm({ ...form, address: e.target.value })
                 }
-                placeholder="Your address"
+                placeholder={t("yourAddress")}
                 rows={3}
                 className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 resize-none"
                 required
@@ -108,7 +104,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="btn-main w-full mt-6"
             >
-              {loading ? "Creating account..." : "Register"}
+              {loading ? t("creatingAccount") : t("register")}
             </button>
 
             {message && (

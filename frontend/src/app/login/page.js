@@ -1,12 +1,7 @@
-"use client";
-
-import { useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import API_URL from "../../utils/api";
-import Link from "next/link";
+import { useLanguage } from "../../context/LanguageContext";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -25,13 +20,13 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || t("loginFailed"));
     }
   };
 
   return (
     <div className="max-w-md mx-auto p-8 mt-10 glass rounded-3xl text-white">
-      <h1 className="text-3xl font-bold mb-6 text-gold-gradient">Login</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("login")}</h1>
 
       {error && <p className="mb-4 text-red-500 text-sm">{error}</p>}
 
@@ -39,7 +34,7 @@ export default function LoginPage() {
         <input
           className="w-full border border-white/20 bg-white p-4 rounded-2xl text-black placeholder-black/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
           type="email"
-          placeholder="Email"
+          placeholder={t("email")}
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
@@ -48,7 +43,7 @@ export default function LoginPage() {
           <input
             className="w-full border border-white/20 bg-white p-4 rounded-2xl text-black placeholder-black/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
             type={showPassword ? "text" : "password"}
-            placeholder="Password"
+            placeholder={t("password")}
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
@@ -70,17 +65,17 @@ export default function LoginPage() {
             )}
           </button>
         </div>
-        <button className="btn-main mt-4">Login</button>
+        <button className="btn-main mt-4">{t("login")}</button>
       </form>
 
       <div className="mt-6 flex flex-col gap-3 text-center text-sm">
         <Link href="/forgot-password" ring-offset-2 className="text-white/50 hover:text-white transition-colors">
-          Forgot Password?
+          {t("forgotPassword")}
         </Link>
         <div className="text-white/30">
-          Don't have an account?{" "}
+          {t("dontHaveAccount")}{" "}
           <Link href="/register" className="text-gold-gradient font-bold hover:underline">
-            Register
+            {t("register")}
           </Link>
         </div>
       </div>
