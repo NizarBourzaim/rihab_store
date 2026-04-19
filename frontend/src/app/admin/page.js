@@ -295,7 +295,9 @@ export default function AdminPage() {
   return (
     <div className="max-w-6xl mx-auto p-6 text-white">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <h1 className="text-4xl font-bold text-gold-gradient tracking-tight">Admin Dashboard</h1>
+        <h1 className="text-4xl font-bold text-gold-gradient tracking-tight">
+          {userInfo?.isAdmin ? "Admin Dashboard" : "Order Management Dashboard"}
+        </h1>
         
         <div className="relative w-full md:w-96">
           <input
@@ -416,32 +418,32 @@ export default function AdminPage() {
         </form>
       )}
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {filteredProducts.length === 0 ? (
-          <div className="col-span-3 text-center py-10 text-white/50 glass rounded-3xl w-full">
-            No products found matching "{searchQuery}"
-          </div>
-        ) : (
-          filteredProducts.map((product) => (
-          <div
-            key={product._id}
-            className="glass rounded-3xl p-5 text-white flex flex-col hover:-translate-y-1 transition-transform duration-300"
-          >
-            {product.image && (
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded-2xl mb-4 opacity-90"
-              />
-            )}
+      {userInfo?.isAdmin && (
+        <div className="grid md:grid-cols-3 gap-6">
+          {filteredProducts.length === 0 ? (
+            <div className="col-span-3 text-center py-10 text-white/50 glass rounded-3xl w-full">
+              No products found matching "{searchQuery}"
+            </div>
+          ) : (
+            filteredProducts.map((product) => (
+            <div
+              key={product._id}
+              className="glass rounded-3xl p-5 text-white flex flex-col hover:-translate-y-1 transition-transform duration-300"
+            >
+              {product.image && (
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded-2xl mb-4 opacity-90"
+                />
+              )}
 
-            <h2 className="text-xl font-semibold">{product.name}</h2>
-            <p className="text-white/60 mt-2 text-sm flex-grow">
-              {product.description || "No description"}
-            </p>
-            <p className="font-bold mt-4 text-gold-gradient text-lg">{product.price} MAD</p>
+              <h2 className="text-xl font-semibold">{product.name}</h2>
+              <p className="text-white/60 mt-2 text-sm flex-grow">
+                {product.description || "No description"}
+              </p>
+              <p className="font-bold mt-4 text-gold-gradient text-lg">{product.price} MAD</p>
 
-            {userInfo?.isAdmin && (
               <div className="mt-5 flex gap-3">
                 <button
                   onClick={() => handleEdit(product)}
@@ -457,11 +459,11 @@ export default function AdminPage() {
                   Delete
                 </button>
               </div>
-            )}
-          </div>
-          ))
-        )}
-      </div>
+            </div>
+            ))
+          )}
+        </div>
+      )}
 
       <div className="mt-16 mb-6 border-t border-[rgba(212,175,55,0.2)] pt-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-3xl font-bold text-gold-gradient">Order Management</h2>
