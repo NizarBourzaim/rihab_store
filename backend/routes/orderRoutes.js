@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/order");
+const fs = require("fs");
+const path = require("path");
 const { appendOrderToExcel } = require("../utils/orderExcel");
 const { appendOrderToGoogleSheets, updateOrderStatusInGoogleSheets } = require("../utils/googleSheets");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
@@ -91,15 +93,22 @@ router.get("/:id/download", async (req, res) => {
     // Pipe the PDF directly to the response
     doc.pipe(res);
 
-    // Header / Brand
-    doc.fillColor("#BF953F")
-       .fontSize(24)
-       .text("RINIFAZA STORE", 50, 45, { align: "left" });
+    // Header / Brand Logo
+    const logoPath = path.join(__dirname, "..", "assets", "logo.png");
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 50, 40, { width: 150 });
+      doc.moveDown(4); // Give space after image
+    } else {
+      doc.fillColor("#BF953F")
+         .fontSize(24)
+         .text("RINIFAZA STORE", 50, 45, { align: "left" });
+      doc.moveDown();
+    }
 
     doc.fillColor("#444444")
        .fontSize(10)
-       .text("Premium Fashion & Accessories", 50, 75)
-       .text("Morocco", 50, 90)
+       .text("Premium Fashion & Accessories", 50, 95)
+       .text("Morocco", 50, 110)
        .moveDown();
 
     // Receipt Title
