@@ -95,30 +95,32 @@ router.get("/:id/download", async (req, res) => {
 
     // Header / Brand Logo
     const logoPath = path.join(__dirname, "..", "assets", "logo.png");
+    const logoWidth = 150;
     if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, 50, 40, { width: 150 });
-      doc.moveDown(4); // Give space after image
+      doc.image(logoPath, (doc.page.width - logoWidth) / 2, 40, { width: logoWidth });
+      doc.moveDown(5); 
     } else {
       doc.fillColor("#BF953F")
          .fontSize(24)
-         .text("RINIFAZA STORE", 50, 45, { align: "left" });
+         .text("RINIFAZA STORE", 50, 45, { align: "center" });
       doc.moveDown();
     }
 
-    doc.fillColor("#000000")
+    doc.fillColor("#BF953F") // GOLD
        .fontSize(10)
        .font("Helvetica-Bold")
-       .text("luxurious - islamic - fashion", 50, 95);
+       .text("luxurious - islamic - fashion", 50, 105, { align: "center" });
 
     doc.font("Helvetica")
        .fillColor("#444444")
-       .text("Morocco", 50, 110)
+       .text("Morocco", 50, 120, { align: "center" })
        .moveDown();
 
     // Receipt Title
-    doc.fillColor("#000000")
-       .fontSize(20)
-       .text("ORDER RECEIPT", 50, 130, { align: "center" })
+    doc.fillColor("#BF953F")
+       .fontSize(22)
+       .font("Helvetica-Bold")
+       .text("ORDER RECEIPT", 50, 150, { align: "center" })
        .moveDown();
 
     // Order Info & Customer Info Grid
