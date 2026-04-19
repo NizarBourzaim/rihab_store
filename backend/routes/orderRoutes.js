@@ -108,7 +108,7 @@ router.get("/:id/download", async (req, res) => {
     const taglineY = 88;
     const spacing = 12;
 
-    doc.fillColor("#BF953F") // GOLD
+    doc.fillColor("#000000") // BLACK
        .fontSize(10)
        .font("Helvetica-Bold")
        .text("luxurious - islamic - fashion", logoX, taglineY, { width: logoWidth, align: "center" });
@@ -119,7 +119,7 @@ router.get("/:id/download", async (req, res) => {
        .moveDown(2);
 
     // Receipt Title
-    doc.fillColor("#BF953F")
+    doc.fillColor("#000000") // BLACK
        .fontSize(22)
        .font("Helvetica-Bold")
        .text("ORDER RECEIPT", 50, 140, { align: "center" })
