@@ -126,8 +126,8 @@ router.get("/:id/download", async (req, res) => {
        .moveDown();
 
     // Order Info & Customer Info Grid
-    const infoY = 170;
-    doc.fontSize(10).font("Helvetica-Bold").text("ORDER DETAILS", 50, infoY);
+    const infoY = 180;
+    doc.fillColor("#000000").fontSize(10).font("Helvetica-Bold").text("ORDER DETAILS", 50, infoY);
     doc.font("Helvetica").text(`Order Number: ${order.orderNumber}`, 50, infoY + 20);
     doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 50, infoY + 35);
 
