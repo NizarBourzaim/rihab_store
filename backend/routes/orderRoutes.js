@@ -99,29 +99,30 @@ router.get("/:id/download", async (req, res) => {
     const logoX = 50;
     if (fs.existsSync(logoPath)) {
       doc.image(logoPath, logoX, 40, { width: logoWidth });
-      doc.moveDown(5); 
     } else {
       doc.fillColor("#BF953F")
          .fontSize(24)
          .text("RINIFAZA STORE", logoX, 45, { align: "left" });
-      doc.moveDown();
     }
+
+    const taglineY = 88;
+    const spacing = 12;
 
     doc.fillColor("#BF953F") // GOLD
        .fontSize(10)
        .font("Helvetica-Bold")
-       .text("luxurious - islamic - fashion", logoX, 105, { width: logoWidth, align: "center" });
+       .text("luxurious - islamic - fashion", logoX, taglineY, { width: logoWidth, align: "center" });
 
     doc.font("Helvetica")
        .fillColor("#444444")
-       .text("Morocco", logoX, 120, { width: logoWidth, align: "center" })
-       .moveDown();
+       .text("Morocco", logoX, taglineY + spacing, { width: logoWidth, align: "center" })
+       .moveDown(2);
 
     // Receipt Title
     doc.fillColor("#BF953F")
        .fontSize(22)
        .font("Helvetica-Bold")
-       .text("ORDER RECEIPT", 50, 150, { align: "center" })
+       .text("ORDER RECEIPT", 50, 140, { align: "center" })
        .moveDown();
 
     // Order Info & Customer Info Grid
