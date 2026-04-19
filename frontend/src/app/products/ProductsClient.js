@@ -143,15 +143,15 @@ export default function ProductsClient({ initialProducts = [] }) {
           <button
             onClick={handleGoToCart}
             className={`
-              flex items-center gap-3 px-8 py-4 rounded-full font-bold text-white shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95
-              ${isClicked ? "bg-green-600 scale-95" : "bg-gray-600/90 backdrop-blur border border-white/10 hover:bg-gray-500/90"}
+              btn-main flex items-center gap-3 px-8 py-5 shadow-[0_10px_30px_rgba(212,175,55,0.4)] transition-all duration-300 transform hover:scale-105 active:scale-95
+              ${isClicked ? "opacity-80 scale-95" : ""}
             `}
           >
-            <span>Cart</span>
-            <span className="bg-white text-black px-3 py-1 rounded-full text-sm">
+            <span className="text-black uppercase tracking-wider">Cart</span>
+            <span className="bg-black/80 text-gold-gradient px-3 py-1 rounded-full text-sm font-bold border border-gold/20">
               {totalQty} {totalQty === 1 ? "item" : "items"}
             </span>
-            <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 ml-1 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </button>
