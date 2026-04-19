@@ -32,4 +32,12 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly };
+const staffOnly = (req, res, next) => {
+  if (req.user && (req.user.isAdmin || req.user.isOrderManager)) {
+    next();
+  } else {
+    return res.status(403).json({ message: "Access denied" });
+  }
+};
+
+module.exports = { protect, adminOnly, staffOnly };

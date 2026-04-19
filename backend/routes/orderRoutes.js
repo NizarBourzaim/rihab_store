@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { appendOrderToExcel } = require("../utils/orderExcel");
 const { appendOrderToGoogleSheets, updateOrderStatusInGoogleSheets } = require("../utils/googleSheets");
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { protect, adminOnly, staffOnly } = require("../middleware/authMiddleware");
 
 function generateOrderNumber() {
   const now = new Date();
@@ -183,8 +183,8 @@ router.get("/:id/download", async (req, res) => {
   }
 });
 
-// Get all orders (Admin only)
-router.get("/", protect, adminOnly, async (req, res) => {
+// Get all orders (Staff access)
+router.get("/", protect, staffOnly, async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
@@ -193,8 +193,8 @@ router.get("/", protect, adminOnly, async (req, res) => {
   }
 });
 
-// Update order status (Admin only)
-router.put("/:id/status", protect, adminOnly, async (req, res) => {
+// Update order status (Staff access)
+router.put("/:id/status", protect, staffOnly, async (req, res) => {
   try {
     const { status } = req.body;
     const order = await Order.findById(req.params.id);

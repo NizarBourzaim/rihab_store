@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [success, setSuccess] = useState("");
   const [uploading, setUploading] = useState(false);
   const [selectedOrderView, setSelectedOrderView] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   const getUserInfo = () => {
     if (typeof window === "undefined") return null;
@@ -51,6 +52,8 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    const info = getUserInfo();
+    setUserInfo(info);
     fetchProducts();
     fetchOrders();
   }, []);
@@ -320,96 +323,98 @@ export default function AdminPage() {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid gap-5 glass p-8 rounded-3xl mb-10"
-      >
-        <h2 className="text-2xl font-bold text-gold-gradient mb-2">
-          {editingId ? "Edit Product" : "Add Product"}
-        </h2>
+      {userInfo?.isAdmin && (
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-5 glass p-8 rounded-3xl mb-10"
+        >
+          <h2 className="text-2xl font-bold text-gold-gradient mb-2">
+            {editingId ? "Edit Product" : "Add Product"}
+          </h2>
 
-        <input
-          className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
-          type="text"
-          name="name"
-          placeholder="Product name"
-          value={form.name}
-          onChange={handleChange}
-        />
-
-        <input
-          className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
-          type="number"
-          name="price"
-          placeholder="Price"
-          value={form.price}
-          onChange={handleChange}
-        />
-
-        <div className="flex gap-4">
           <input
-            className="flex-grow border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+            className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
             type="text"
-            name="image"
-            placeholder="Image URL"
-            value={form.image}
+            name="name"
+            placeholder="Product name"
+            value={form.name}
             onChange={handleChange}
           />
-          <div className="relative">
+
+          <input
+            className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+            type="number"
+            name="price"
+            placeholder="Price"
+            value={form.price}
+            onChange={handleChange}
+          />
+
+          <div className="flex gap-4">
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleUpload}
-              className="hidden"
-              id="image-upload"
+              className="flex-grow border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+              type="text"
+              name="image"
+              placeholder="Image URL"
+              value={form.image}
+              onChange={handleChange}
             />
-            <label
-              htmlFor="image-upload"
-              className={`h-full flex items-center justify-center px-6 rounded-2xl cursor-pointer border border-[rgba(212,175,55,0.5)] text-gold-gradient font-semibold hover:bg-[rgba(212,175,55,0.1)] transition-all ${uploading ? 'opacity-50 cursor-wait' : ''}`}
-            >
-              {uploading ? (
-                <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Upload
-                </>
-              )}
-            </label>
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUpload}
+                className="hidden"
+                id="image-upload"
+              />
+              <label
+                htmlFor="image-upload"
+                className={`h-full flex items-center justify-center px-6 rounded-2xl cursor-pointer border border-[rgba(212,175,55,0.5)] text-gold-gradient font-semibold hover:bg-[rgba(212,175,55,0.1)] transition-all ${uploading ? 'opacity-50 cursor-wait' : ''}`}
+              >
+                {uploading ? (
+                  <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Upload
+                  </>
+                )}
+              </label>
+            </div>
           </div>
-        </div>
 
-        <textarea
-          className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all resize-none"
-          name="description"
-          placeholder="Description"
-          value={form.description}
-          onChange={handleChange}
-          rows={4}
-        />
+          <textarea
+            className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all resize-none"
+            name="description"
+            placeholder="Description"
+            value={form.description}
+            onChange={handleChange}
+            rows={4}
+          />
 
-        <div className="flex gap-4 mt-2">
-          <button
-            type="submit"
-            disabled={uploading}
-            className={`btn-main px-8 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {uploading ? "Uploading..." : (editingId ? "Update Product" : "Add Product")}
-          </button>
-
-          {editingId && (
+          <div className="flex gap-4 mt-2">
             <button
-              type="button"
-              onClick={resetForm}
-              className="btn-secondary px-8"
+              type="submit"
+              disabled={uploading}
+              className={`btn-main px-8 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Cancel
+              {uploading ? "Uploading..." : (editingId ? "Update Product" : "Add Product")}
             </button>
-          )}
-        </div>
-      </form>
+
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="btn-secondary px-8"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      )}
 
       <div className="grid md:grid-cols-3 gap-6">
         {filteredProducts.length === 0 ? (
@@ -436,21 +441,23 @@ export default function AdminPage() {
             </p>
             <p className="font-bold mt-4 text-gold-gradient text-lg">{product.price} MAD</p>
 
-            <div className="mt-5 flex gap-3">
-              <button
-                onClick={() => handleEdit(product)}
-                className="flex-1 btn-secondary text-sm py-2 px-0 min-w-0"
-              >
-                Edit
-              </button>
+            {userInfo?.isAdmin && (
+              <div className="mt-5 flex gap-3">
+                <button
+                  onClick={() => handleEdit(product)}
+                  className="flex-1 btn-secondary text-sm py-2 px-0 min-w-0"
+                >
+                  Edit
+                </button>
 
-              <button
-                onClick={() => handleDelete(product._id)}
-                className="flex-1 bg-red-600/80 hover:bg-red-600 text-white font-semibold rounded-full text-sm py-2 transition-colors border border-transparent"
-              >
-                Delete
-              </button>
-            </div>
+                <button
+                  onClick={() => handleDelete(product._id)}
+                  className="flex-1 bg-red-600/80 hover:bg-red-600 text-white font-semibold rounded-full text-sm py-2 transition-colors border border-transparent"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
           ))
         )}
@@ -458,31 +465,33 @@ export default function AdminPage() {
 
       <div className="mt-16 mb-6 border-t border-[rgba(212,175,55,0.2)] pt-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-3xl font-bold text-gold-gradient">Order Management</h2>
-        <div className="flex gap-3 flex-wrap">
-          <button
-            onClick={() => {
-              if (selectedOrders.length === filteredOrders.length && filteredOrders.length > 0) {
-                setSelectedOrders([]);
-              } else {
-                setSelectedOrders(filteredOrders.map(o => o._id));
-              }
-            }}
-            className="bg-white/10 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-white/20 transition-colors border border-white/10"
-          >
-            Tout Sélectionner
-          </button>
-          
-          <button
-            onClick={handleBulkDeleteOrders}
-            disabled={selectedOrders.length === 0}
-            className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors border
-            ${selectedOrders.length > 0 
-                ? "bg-red-600/80 border-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.3)]" 
-                : "bg-white/5 border-white/5 text-white/30 cursor-not-allowed"}`}
-          >
-            Delete Selected ({selectedOrders.length})
-          </button>
-        </div>
+        {userInfo?.isAdmin && (
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={() => {
+                if (selectedOrders.length === filteredOrders.length && filteredOrders.length > 0) {
+                  setSelectedOrders([]);
+                } else {
+                  setSelectedOrders(filteredOrders.map(o => o._id));
+                }
+              }}
+              className="bg-white/10 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-white/20 transition-colors border border-white/10"
+            >
+              Tout Sélectionner
+            </button>
+            
+            <button
+              onClick={handleBulkDeleteOrders}
+              disabled={selectedOrders.length === 0}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors border
+              ${selectedOrders.length > 0 
+                  ? "bg-red-600/80 border-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.3)]" 
+                  : "bg-white/5 border-white/5 text-white/30 cursor-not-allowed"}`}
+            >
+              Delete Selected ({selectedOrders.length})
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="glass rounded-3xl overflow-x-auto text-white mb-12">
@@ -490,12 +499,14 @@ export default function AdminPage() {
           <thead>
             <tr className="bg-white/5 border-b border-white/10">
               <th className="p-5 w-12 text-center">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 cursor-pointer accent-[#D4AF37]"
-                  checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
-                  onChange={handleSelectAllOrders}
-                />
+                {userInfo?.isAdmin && (
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 cursor-pointer accent-[#D4AF37]"
+                    checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+                    onChange={handleSelectAllOrders}
+                  />
+                )}
               </th>
               <th className="p-5 font-semibold text-white/70">Order #</th>
               <th className="p-5 font-semibold text-white/70">Customer</th>
@@ -514,12 +525,14 @@ export default function AdminPage() {
               filteredOrders.map((order) => (
                 <tr key={order._id} className={`border-b border-white/5 transition-colors ${selectedOrders.includes(order._id) ? "bg-[rgba(212,175,55,0.1)]" : "hover:bg-white/5"}`}>
                   <td className="p-5 text-center">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 cursor-pointer accent-[#D4AF37]"
-                      checked={selectedOrders.includes(order._id)}
-                      onChange={() => handleSelectOrder(order._id)}
-                    />
+                    {userInfo?.isAdmin && (
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 cursor-pointer accent-[#D4AF37]"
+                        checked={selectedOrders.includes(order._id)}
+                        onChange={() => handleSelectOrder(order._id)}
+                      />
+                    )}
                   </td>
                   <td className="p-5 font-mono text-sm text-[rgba(251,245,183,0.8)]">{order.orderNumber}</td>
                   <td className="p-5">
@@ -560,15 +573,17 @@ export default function AdminPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                     </button>
-                    <button
-                      onClick={() => handleSingleDeleteOrder(order._id)}
-                      className="text-white/40 hover:text-red-500 font-medium text-sm inline-flex items-center justify-center p-2 rounded-full hover:bg-red-500/10 transition-colors"
-                      title="Delete Order"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    {userInfo?.isAdmin && (
+                      <button
+                        onClick={() => handleSingleDeleteOrder(order._id)}
+                        className="text-white/40 hover:text-red-500 font-medium text-sm inline-flex items-center justify-center p-2 rounded-full hover:bg-red-500/10 transition-colors"
+                        title="Delete Order"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
