@@ -105,9 +105,13 @@ router.get("/:id/download", async (req, res) => {
       doc.moveDown();
     }
 
-    doc.fillColor("#444444")
+    doc.fillColor("#000000")
        .fontSize(10)
-       .text("Premium Fashion & Accessories", 50, 95)
+       .font("Helvetica-Bold")
+       .text("luxurious - islamic - fashion", 50, 95);
+
+    doc.font("Helvetica")
+       .fillColor("#444444")
        .text("Morocco", 50, 110)
        .moveDown();
 
