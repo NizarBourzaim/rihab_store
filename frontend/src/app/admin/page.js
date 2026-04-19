@@ -497,21 +497,18 @@ export default function AdminPage() {
                   onChange={handleSelectAllOrders}
                 />
               </th>
-              <th className="p-5 font-semibold text-white/70">Order Number</th>
-              <th className="p-5 font-semibold text-white/70">Customer Name</th>
-              <th className="p-5 font-semibold text-white/70">Phone</th>
-              <th className="p-5 font-semibold text-white/70">Address</th>
-              <th className="p-5 font-semibold text-white/70">Items</th>
-              <th className="p-5 font-semibold text-white/70">Total (MAD)</th>
-              <th className="p-5 font-semibold text-white/70">Status</th>
+              <th className="p-5 font-semibold text-white/70">Order #</th>
+              <th className="p-5 font-semibold text-white/70">Customer</th>
+              <th className="p-5 font-semibold text-white/70">Total</th>
               <th className="p-5 font-semibold text-white/70">Date</th>
+              <th className="p-5 font-semibold text-white/70">Status</th>
               <th className="p-5 font-semibold text-white/70 text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan="10" className="p-10 text-center text-white/50">No orders found matching your search.</td>
+                <td colSpan="7" className="p-10 text-center text-white/50">No orders found matching your search.</td>
               </tr>
             ) : (
               filteredOrders.map((order) => (
@@ -525,15 +522,14 @@ export default function AdminPage() {
                     />
                   </td>
                   <td className="p-5 font-mono text-sm text-[rgba(251,245,183,0.8)]">{order.orderNumber}</td>
-                  <td className="p-5 font-medium">{order.customerName}</td>
-                  <td className="p-5 text-sm text-white/70">{order.customerPhone}</td>
-                  <td className="p-5 text-sm text-white/50 max-w-[200px] truncate" title={order.customerAddress}>
-                    {order.customerAddress || "---"}
-                  </td>
-                  <td className="p-5 text-xs text-white/60 max-w-[150px] truncate" title={order.items?.map(i => `${i.name} (x${i.qty || 1})`).join(", ")}>
-                    {order.items?.map(i => i.name).join(", ") || "No items"}
+                  <td className="p-5">
+                    <div className="font-medium">{order.customerName}</div>
+                    <div className="text-sm text-white/50">{order.customerPhone}</div>
                   </td>
                   <td className="p-5 font-bold text-gold-gradient">{order.total} MAD</td>
+                  <td className="p-5 text-sm text-white/60">
+                    {new Date(order.createdAt).toLocaleString()}
+                  </td>
                   <td className="p-4">
                     <select
                       value={order.status || "pending"}
@@ -552,9 +548,6 @@ export default function AdminPage() {
                       <option value="delivered" className="bg-white text-black font-semibold">🟢 Delivered</option>
                       <option value="canceled" className="bg-white text-black font-semibold">🔴 Canceled</option>
                     </select>
-                  </td>
-                  <td className="p-5 text-sm text-white/60">
-                    {new Date(order.createdAt).toLocaleString()}
                   </td>
                    <td className="p-5 text-center flex items-center justify-center gap-2">
                     <button
@@ -597,7 +590,7 @@ export default function AdminPage() {
             <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
               <div>
                 <h3 className="text-2xl font-bold text-gold-gradient">Order Details</h3>
-                <p className="text-white/50 text-sm mt-1">{selectedOrderView.orderNumber}</p>
+                <p className="text-white/50 text-sm mt-1">Order Number: {selectedOrderView.orderNumber}</p>
               </div>
               <button 
                 onClick={() => setSelectedOrderView(null)}
@@ -611,15 +604,31 @@ export default function AdminPage() {
 
             {/* Content */}
             <div className="p-6 overflow-y-auto space-y-8 custom-scrollbar">
-              {/* Customer Info */}
-              <div className="grid grid-cols-2 gap-6">
+              {/* Main Info Grid */}
+              <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Customer</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Customer Info</h4>
                   <p className="font-semibold text-lg">{selectedOrderView.customerName}</p>
                   <p className="text-white/60">{selectedOrderView.customerPhone}</p>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Shipping Address</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Order Status & Date</h4>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`w-3 h-3 rounded-full 
+                      ${selectedOrderView.status === "delivered" ? "bg-green-500" : 
+                        selectedOrderView.status === "canceled" ? "bg-red-500" : 
+                        selectedOrderView.status === "shipped" ? "bg-orange-500" : "bg-blue-500"}
+                    `}></span>
+                    <p className="font-semibold capitalize">{selectedOrderView.status || "pending"}</p>
+                  </div>
+                  <p className="text-white/60 text-sm">{new Date(selectedOrderView.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Address */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Shipping Address</h4>
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                   <p className="text-white/80 leading-relaxed italic">
                     "{selectedOrderView.customerAddress || "No address provided"}"
                   </p>
