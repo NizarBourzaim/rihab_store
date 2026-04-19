@@ -27,6 +27,7 @@ router.post("/register", async (req, res) => {
       phone: user.phone,
       address: user.address,
       isAdmin: user.isAdmin,
+      isOrderManager: user.isOrderManager,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -48,6 +49,7 @@ router.post("/login", async (req, res) => {
         phone: user.phone,
         address: user.address,
         isAdmin: user.isAdmin,
+        isOrderManager: user.isOrderManager,
         token: generateToken(user._id),
       });
     }

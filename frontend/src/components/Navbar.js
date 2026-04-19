@@ -65,7 +65,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {userInfo.isAdmin && <Link href="/admin" className="hover:text-gold-gradient transition-all">Admin</Link>}
+              {(userInfo.isAdmin || userInfo.isOrderManager) && <Link href="/admin" className="hover:text-gold-gradient transition-all">Admin</Link>}
               <Link href="/profile" className="text-white/70 hover:text-white transition-all">{userInfo.name}</Link>
               <button
                 onClick={handleLogout}
@@ -125,7 +125,7 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex flex-col gap-3 mt-2">
-              {userInfo.isAdmin && <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 text-gold-gradient font-semibold">Admin Dashboard</Link>}
+              {(userInfo.isAdmin || userInfo.isOrderManager) && <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 text-gold-gradient font-semibold">Admin Dashboard</Link>}
               <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5">Profile ({userInfo.name})</Link>
               <button
                 onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}

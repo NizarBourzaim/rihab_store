@@ -18,7 +18,7 @@ export default function LoginPage() {
       localStorage.setItem("userInfo", JSON.stringify(data));
       window.dispatchEvent(new Event("userInfoUpdated"));
 
-      if (data.isAdmin) {
+      if (data.isAdmin || data.isOrderManager) {
         router.push("/admin");
       } else {
         router.push("/");
