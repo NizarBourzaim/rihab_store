@@ -37,7 +37,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="grid gap-5">
         <input
-          className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+          className="w-full border border-white/20 bg-white p-4 rounded-2xl text-black placeholder-black/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
           type="email"
           placeholder="Email"
           value={form.email}
@@ -46,7 +46,7 @@ export default function LoginPage() {
         />
         <div className="relative">
           <input
-            className="w-full border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+            className="w-full border border-white/20 bg-white p-4 rounded-2xl text-black placeholder-black/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
             type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={form.password}
@@ -56,7 +56,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-black/50 hover:text-black transition-colors"
           >
             {showPassword ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
