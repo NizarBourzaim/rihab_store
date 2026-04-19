@@ -19,21 +19,9 @@ export default function CartPage() {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Removed automatic pre-filling of customer info to keep it clean for every order
   useEffect(() => {
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("userInfo")
-        : null;
-
-    if (stored) {
-      const userInfo = JSON.parse(stored);
-
-      setCustomer({
-        customerName: userInfo.name || "",
-        customerPhone: userInfo.phone || "",
-        customerAddress: userInfo.address || "",
-      });
-    }
+    // Info is now empty by default as requested
   }, []);
 
   const total = cartItems.reduce(
@@ -217,7 +205,7 @@ export default function CartPage() {
             <button
               onClick={handleOrder}
               disabled={loading}
-              className="block mt-6 bg-[#25D366] hover:opacity-90 text-white font-bold px-6 py-4 rounded-2xl disabled:opacity-60 transition-opacity"
+              className="block mt-6 btn-main px-10 py-4 disabled:opacity-60"
             >
               {loading ? "Creating Order..." : "Order Now"}
             </button>
