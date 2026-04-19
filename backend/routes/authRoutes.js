@@ -88,7 +88,7 @@ router.post("/forgot-password", async (req, res) => {
       },
     });
 
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
     const mailOptions = {
       from: `"Rinifaza Store" <${process.env.EMAIL_USER}>`,
