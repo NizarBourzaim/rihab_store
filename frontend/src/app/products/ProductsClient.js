@@ -148,7 +148,7 @@ export default function ProductsClient({ initialProducts = [] }) {
             `}
           >
             <span className="text-black uppercase tracking-wider">Cart</span>
-            <span className="bg-black/80 text-gold-gradient px-3 py-1 rounded-full text-sm font-bold border border-gold/20">
+            <span className="bg-black/10 text-black px-3 py-1 rounded-full text-sm font-bold border border-black/10">
               {totalQty} {totalQty === 1 ? "item" : "items"}
             </span>
             <svg className="w-5 h-5 ml-1 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
