@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const getUserInfo = () => {
     if (typeof window === "undefined") return null;
@@ -55,6 +56,40 @@ export default function AdminPage() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const userInfo = getUserInfo();
+    if (!userInfo?.token) {
+      setError("Admin login required for upload.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setUploading(true);
+      setError("");
+      setSuccess("");
+
+      const { data } = await axios.post(`${API_URL}/api/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      });
+
+      setForm({ ...form, image: data.url });
+      setSuccess("Image uploaded successfully!");
+      setUploading(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Upload failed.");
+      setUploading(false);
+    }
   };
 
   const resetForm = () => {
@@ -306,14 +341,40 @@ export default function AdminPage() {
           onChange={handleChange}
         />
 
-        <input
-          className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
-          type="text"
-          name="image"
-          placeholder="Image URL"
-          value={form.image}
-          onChange={handleChange}
-        />
+        <div className="flex gap-4">
+          <input
+            className="flex-grow border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+            type="text"
+            name="image"
+            placeholder="Image URL"
+            value={form.image}
+            onChange={handleChange}
+          />
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleUpload}
+              className="hidden"
+              id="image-upload"
+            />
+            <label
+              htmlFor="image-upload"
+              className={`h-full flex items-center justify-center px-6 rounded-2xl cursor-pointer border border-[rgba(212,175,55,0.5)] text-gold-gradient font-semibold hover:bg-[rgba(212,175,55,0.1)] transition-all ${uploading ? 'opacity-50 cursor-wait' : ''}`}
+            >
+              {uploading ? (
+                <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Upload
+                </>
+              )}
+            </label>
+          </div>
+        </div>
 
         <textarea
           className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all resize-none"
