@@ -202,13 +202,15 @@ export default function CartPage() {
             <h2 className="text-2xl font-bold text-gold-gradient">Order Summary</h2>
             <p className="mt-4 text-xl font-semibold bg-white/5 inline-block px-4 py-2 rounded-xl border border-white/10">Total: <span className="text-gold-gradient">{total} MAD</span></p>
 
-            <button
-              onClick={handleOrder}
-              disabled={loading}
-              className="block mt-6 btn-main px-10 py-4 disabled:opacity-60"
-            >
-              {loading ? "Creating Order..." : "Order Now"}
-            </button>
+            <div className="mt-6">
+              <button
+                onClick={handleOrder}
+                disabled={loading}
+                className="btn-main px-10 py-4 disabled:opacity-60"
+              >
+                {loading ? "Creating Order..." : "Order Now"}
+              </button>
+            </div>
           </div>
         </>
       )}
