@@ -83,10 +83,12 @@ export default function AdminPage() {
         },
       });
 
-      setForm({ ...form, image: data.url });
+      console.log("Upload Success:", data.url);
+      setForm((prev) => ({ ...prev, image: data.url }));
       setSuccess("Image uploaded successfully!");
       setUploading(false);
     } catch (err) {
+      console.error("Upload Error:", err);
       setError(err.response?.data?.message || "Upload failed.");
       setUploading(false);
     }
@@ -388,9 +390,10 @@ export default function AdminPage() {
         <div className="flex gap-4 mt-2">
           <button
             type="submit"
-            className="btn-main px-8"
+            disabled={uploading}
+            className={`btn-main px-8 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {editingId ? "Update Product" : "Add Product"}
+            {uploading ? "Uploading..." : (editingId ? "Update Product" : "Add Product")}
           </button>
 
           {editingId && (
