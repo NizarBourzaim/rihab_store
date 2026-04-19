@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [selectedOrderView, setSelectedOrderView] = useState(null);
 
   const getUserInfo = () => {
     if (typeof window === "undefined") return null;
@@ -475,7 +476,7 @@ export default function AdminPage() {
             onClick={handleBulkDeleteOrders}
             disabled={selectedOrders.length === 0}
             className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors border
-              ${selectedOrders.length > 0 
+            ${selectedOrders.length > 0 
                 ? "bg-red-600/80 border-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.3)]" 
                 : "bg-white/5 border-white/5 text-white/30 cursor-not-allowed"}`}
           >
@@ -548,13 +549,23 @@ export default function AdminPage() {
                       <option value="canceled" className="bg-white text-black font-semibold">🔴 Canceled</option>
                     </select>
                   </td>
-                  <td className="p-5 text-center">
+                   <td className="p-5 text-center flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setSelectedOrderView(order)}
+                      className="text-white/40 hover:text-gold font-medium text-sm inline-flex items-center justify-center p-2 rounded-full hover:bg-gold/10 transition-colors"
+                      title="Preview Order"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
                     <button
                       onClick={() => handleSingleDeleteOrder(order._id)}
                       className="text-white/40 hover:text-red-500 font-medium text-sm inline-flex items-center justify-center p-2 rounded-full hover:bg-red-500/10 transition-colors"
                       title="Delete Order"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -565,6 +576,79 @@ export default function AdminPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Order Details Modal */}
+      {selectedOrderView && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setSelectedOrderView(null)}
+          ></div>
+          
+          <div className="relative glass rounded-[32px] w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-300">
+            {/* Header */}
+            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
+              <div>
+                <h3 className="text-2xl font-bold text-gold-gradient">Order Details</h3>
+                <p className="text-white/50 text-sm mt-1">{selectedOrderView.orderNumber}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedOrderView(null)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto space-y-8 custom-scrollbar">
+              {/* Customer Info */}
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Customer</h4>
+                  <p className="font-semibold text-lg">{selectedOrderView.customerName}</p>
+                  <p className="text-white/60">{selectedOrderView.customerPhone}</p>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Shipping Address</h4>
+                  <p className="text-white/80 leading-relaxed italic">
+                    "{selectedOrderView.customerAddress || "No address provided"}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Items */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-4">Order Items</h4>
+                <div className="space-y-3">
+                  {selectedOrderView.items && selectedOrderView.items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shadow-lg" />
+                      )}
+                      <div className="flex-grow">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-xs text-white/50">{item.price} MAD x {item.qty || 1}</p>
+                      </div>
+                      <div className="text-right font-bold text-gold-gradient">
+                        {(item.price * (item.qty || 1))} MAD
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 bg-white/5 border-t border-white/10 flex items-center justify-between">
+              <span className="text-white/50">Total Amount</span>
+              <span className="text-3xl font-bold text-gold-gradient">{selectedOrderView.total} MAD</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
