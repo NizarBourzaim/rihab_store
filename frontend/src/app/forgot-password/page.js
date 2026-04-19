@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import axios from "axios";
-import API_URL from "../utils/api";
+import API_URL from "../../utils/api";
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {
