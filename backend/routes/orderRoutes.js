@@ -122,12 +122,11 @@ router.get("/:id/download", async (req, res) => {
     doc.fontSize(10).font("Helvetica-Bold").text("ORDER DETAILS", 50, infoY);
     doc.font("Helvetica").text(`Order Number: ${order.orderNumber}`, 50, infoY + 20);
     doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 50, infoY + 35);
-    doc.text(`Status: ${order.status.toUpperCase()}`, 50, infoY + 50);
 
     doc.font("Helvetica-Bold").text("BILL TO:", 350, infoY);
-    doc.font("Helvetica").text(order.customerName, 350, infoY + 20);
-    doc.text(order.customerPhone, 350, infoY + 35);
-    doc.text(order.customerAddress || "No address provided", 350, infoY + 50, { width: 200 });
+    doc.font("Helvetica").text(`Name: ${order.customerName}`, 350, infoY + 20);
+    doc.text(`Number: ${order.customerPhone}`, 350, infoY + 35);
+    doc.text(`Address: ${order.customerAddress || "No address provided"}`, 350, infoY + 50, { width: 200 });
 
     // Table Header
     const tableTop = 260;
