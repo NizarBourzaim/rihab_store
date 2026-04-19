@@ -1,3 +1,11 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "../../context/CartContext";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import API_URL from "../../utils/api";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function ProductsClient({ initialProducts = [] }) {

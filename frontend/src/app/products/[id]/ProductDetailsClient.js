@@ -6,8 +6,10 @@ import Navbar from "../../../components/Navbar";
 import { useCart } from "../../../context/CartContext";
 import { useParams } from "next/navigation";
 import API_URL from "../../../utils/api";
+import { useLanguage } from "../../../context/LanguageContext";
 
 export default function ProductDetailsClient({ initialProduct }) {
+  const { t } = useLanguage();
   const { addToCart } = useCart();
   const params = useParams();
   const [product, setProduct] = useState(initialProduct);
@@ -37,7 +39,7 @@ export default function ProductDetailsClient({ initialProduct }) {
         <section className="py-20">
           <div className="container-custom">
             <div className="glass rounded-3xl p-8 text-white/70">
-              Loading product...
+              {t("loading")}...
             </div>
           </div>
         </section>
@@ -69,7 +71,7 @@ export default function ProductDetailsClient({ initialProduct }) {
 
               <div className="mt-8 flex items-center justify-between">
                 <span className="text-3xl font-bold">
-                  {product.price} MAD
+                  {product.price} {t("mad")}
                 </span>
               </div>
 
@@ -77,7 +79,7 @@ export default function ProductDetailsClient({ initialProduct }) {
                 onClick={() => addToCart(product)}
                 className="btn-main mt-8 w-full"
               >
-                Add to Cart
+                {t("addToCart")}
               </button>
             </div>
           </div>

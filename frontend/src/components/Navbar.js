@@ -1,3 +1,8 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useCart } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
 
 export default function Navbar() {
