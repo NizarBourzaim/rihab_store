@@ -17,6 +17,14 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  stock: {
+    type: Number,
+    default: null, // null = unlimited/not tracked; a number enables preorder-on-depletion
+  },
+  preorderDate: {
+    type: Date,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model("Product", productSchema);

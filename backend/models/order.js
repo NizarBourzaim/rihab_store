@@ -26,6 +26,17 @@ const orderSchema = new mongoose.Schema(
         price: Number,
         qty: Number,
         image: String,
+        isPreorder: {
+          type: Boolean,
+          default: false,
+        },
+        preorderDate: Date,
+        // How much of this item's qty actually came out of tracked stock (vs. was
+        // already backordered / from an untracked product) — what restoring gives back.
+        stockDeducted: {
+          type: Number,
+          default: 0,
+        },
       },
     ],
     total: {
@@ -35,6 +46,18 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       default: "pending",
+    },
+    paymentProofUrl: {
+      type: String,
+      default: "",
+    },
+    hasPreorderItems: {
+      type: Boolean,
+      default: false,
+    },
+    stockRestored: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

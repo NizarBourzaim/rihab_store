@@ -1,11 +1,34 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const rateLimit = require("express-rate-limit");
 const Order = require("../models/order");
+const Product = require("../models/product");
 const fs = require("fs");
 const path = require("path");
 const { appendOrderToExcel } = require("../utils/orderExcel");
 const { appendOrderToGoogleSheets, updateOrderStatusInGoogleSheets } = require("../utils/googleSheets");
 const { protect, adminOnly, staffOnly } = require("../middleware/authMiddleware");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const proofUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
+
+const proofUploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many attempts. Please try again later." },
+});
 
 function generateOrderNumber() {
   const now = new Date();
@@ -24,6 +47,33 @@ router.post("/whatsapp", async (req, res) => {
       return res.status(400).json({ message: "Missing required order fields" });
     }
 
+    // Decrement tracked stock per item; anything already at/below 0 becomes a preorder.
+    // stockDeducted is the actual amount taken out of real stock (may be less than qty
+    // if stock ran out mid-order) — it's what a later restore-stock call gives back.
+    const processedItems = [];
+    for (const item of items) {
+      let isPreorder = false;
+      let preorderDate = null;
+      let stockDeducted = 0;
+
+      const product = item.productId
+        ? await Product.findById(item.productId).catch(() => null)
+        : null;
+
+      if (product && product.stock !== null && product.stock !== undefined) {
+        const stockBefore = product.stock;
+        isPreorder = stockBefore <= 0;
+        const newStock = Math.max(stockBefore - Number(item.qty || 0), 0);
+        stockDeducted = stockBefore - newStock;
+        product.stock = newStock;
+        await product.save();
+        if (isPreorder) preorderDate = product.preorderDate;
+      }
+
+      processedItems.push({ ...item, isPreorder, preorderDate, stockDeducted });
+    }
+
+    const hasPreorderItems = processedItems.some((item) => item.isPreorder);
     const orderNumber = generateOrderNumber();
 
     const order = await Order.create({
@@ -31,9 +81,10 @@ router.post("/whatsapp", async (req, res) => {
       customerName,
       customerPhone,
       customerAddress,
-      items,
+      items: processedItems,
       total,
       status: "pending",
+      hasPreorderItems,
     });
 
     appendOrderToExcel(order);
@@ -68,11 +119,50 @@ router.post("/whatsapp", async (req, res) => {
       orderNumber: order.orderNumber,
       whatsappUrl,
       downloadUrl: `/api/orders/${order._id}/download`,
+      hasPreorderItems: order.hasPreorderItems,
+      preorderItems: order.items
+        .filter((item) => item.isPreorder)
+        .map((item) => ({ name: item.name, preorderDate: item.preorderDate })),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+// @route   POST /api/orders/:id/payment-proof
+// @desc    Upload a proof-of-payment image/PDF for an order
+router.post(
+  "/:id/payment-proof",
+  proofUploadLimiter,
+  proofUpload.single("proof"),
+  async (req, res) => {
+    try {
+      const order = await Order.findById(req.params.id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const b64 = Buffer.from(req.file.buffer).toString("base64");
+      const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
+      const result = await cloudinary.uploader.upload(dataURI, {
+        folder: "rihab_store/payment_proofs",
+        resource_type: "auto",
+      });
+
+      order.paymentProofUrl = result.secure_url;
+      await order.save();
+
+      res.json({ paymentProofUrl: order.paymentProofUrl });
+    } catch (error) {
+      res.status(500).json({ message: "Upload failed: " + error.message });
+    }
+  }
+);
 
 const PDFDocument = require("pdfkit");
 
@@ -212,6 +302,40 @@ router.put("/:id/status", protect, staffOnly, async (req, res) => {
 
     // Fire Google Sheets update (done asynchronously)
     updateOrderStatusInGoogleSheets(order.orderNumber, status);
+
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   POST /api/orders/:id/restore-stock
+// @desc    Give back the stock this order deducted (e.g. after a fake payment proof
+//          is caught) — adds each item's stockDeducted back onto its product.
+router.post("/:id/restore-stock", protect, staffOnly, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.stockRestored) {
+      return res.status(400).json({ message: "Stock has already been restored for this order" });
+    }
+
+    for (const item of order.items) {
+      if (!item.productId || !item.stockDeducted) continue;
+
+      const product = await Product.findById(item.productId).catch(() => null);
+      if (product && product.stock !== null && product.stock !== undefined) {
+        product.stock += item.stockDeducted;
+        await product.save();
+      }
+    }
+
+    order.stockRestored = true;
+    const updatedOrder = await order.save();
 
     res.json(updatedOrder);
   } catch (error) {
