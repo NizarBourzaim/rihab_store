@@ -267,6 +267,11 @@ router.get("/:id/download", async (req, res) => {
     doc.text("GRAND TOTAL:", 350, currentY);
     doc.fillColor("#BF953F").text(`${order.total} MAD`, 450, currentY, { width: 90, align: "right" });
 
+    // Delivery Notice
+    currentY += 40;
+    doc.fillColor("#000000").font("Helvetica-Bold").fontSize(10)
+       .text("Delivery: your order will be delivered within 48 hours of confirmation.", 50, currentY, { align: "center", width: 500 });
+
     // Footer Message
     doc.fillColor("#aaaaaa").fontSize(10).font("Helvetica-Oblique")
        .text("Thank you for shopping with Rinifaza Store!", 50, 730, { align: "center", width: 500 });
