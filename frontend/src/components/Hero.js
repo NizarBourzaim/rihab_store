@@ -9,7 +9,7 @@ export default function Hero() {
   const { t } = useLanguage();
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative overflow-hidden py-20 md:py-28">
       <div className="absolute inset-0 hero-grid opacity-40"></div>
       <div className="absolute top-[-120px] left-[-120px] w-[260px] h-[260px] bg-[rgba(212,175,55,0.1)] blur-3xl rounded-full"></div>
       <div className="absolute bottom-[-120px] right-[-120px] w-[320px] h-[320px] bg-[rgba(212,175,55,0.08)] blur-3xl rounded-full"></div>
@@ -25,8 +25,8 @@ export default function Hero() {
             <Image
               src="/logo.png"
               alt="Rinifaza Store"
-              width={750}
-              height={300}
+              width={1872}
+              height={546}
               className="object-contain drop-shadow-[0_0_40px_rgba(212,175,55,0.5)] w-full max-w-[320px] sm:max-w-[500px] md:max-w-[650px] lg:max-w-[750px] h-auto"
               priority
             />

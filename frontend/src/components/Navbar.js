@@ -39,6 +39,7 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm">
           <Link href="/" className="hover:text-gold-gradient transition-all">{t("home")}</Link>
+          <Link href="/about" className="hover:text-gold-gradient transition-all">{t("about")}</Link>
           <Link href="/products" className="hover:text-gold-gradient transition-all">{t("products")}</Link>
           <Link href="/cart" className="hover:text-gold-gradient transition-all">{t("cart")}</Link>
 
@@ -159,6 +160,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl py-4 px-6 flex flex-col gap-4">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("home")}</Link>
+          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("about")}</Link>
           <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("products")}</Link>
           <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("cart")}</Link>
 

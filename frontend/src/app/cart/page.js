@@ -70,6 +70,11 @@ export default function CartPage() {
       return;
     }
 
+    if (!/^[5-7]\d{8}$/.test(customer.customerPhone)) {
+      alert(t("invalidPhone"));
+      return;
+    }
+
     if (cartItems.length === 0) {
       alert(t("emptyCart"));
       return;
@@ -80,7 +85,7 @@ export default function CartPage() {
 
       const payload = {
         customerName: customer.customerName,
-        customerPhone: customer.customerPhone,
+        customerPhone: `+212${customer.customerPhone}`,
         customerAddress: customer.customerAddress,
         items: cartItems.map((item) => ({
           productId: item._id,
@@ -153,6 +158,12 @@ export default function CartPage() {
             <p className="text-white/70 text-lg mb-4 max-w-md mx-auto">
               {t("orderNumber")} <span className="text-[#D4AF37] font-mono font-bold">#{orderInfo?.orderNumber}</span>. {t("contactSoon")}
             </p>
+          )}
+
+          {proofSubmitted && (
+            <div className="max-w-md mx-auto mb-8 bg-[rgba(212,175,55,0.08)] border border-[rgba(212,175,55,0.3)] rounded-2xl p-4">
+              <p className="text-[rgba(251,245,183,0.9)] text-sm">{t("deliveryNotice")}</p>
+            </div>
           )}
 
           {proofSubmitted && orderInfo?.hasPreorderItems && (
@@ -324,15 +335,25 @@ export default function CartPage() {
                 className="border border-white/20 bg-white/5 rounded-2xl p-4 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
               />
 
-              <input
-                type="text"
-                placeholder={t("yourPhone")}
-                value={customer.customerPhone}
-                onChange={(e) =>
-                  setCustomer({ ...customer, customerPhone: e.target.value })
-                }
-                className="border border-white/20 bg-white/5 rounded-2xl p-4 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
-              />
+              <div className="flex items-stretch border border-white/20 bg-white/5 rounded-2xl overflow-hidden focus-within:border-[rgba(212,175,55,0.5)] focus-within:ring-1 focus-within:ring-[rgba(212,175,55,0.5)] transition-all">
+                <span className="flex items-center px-4 text-white/50 bg-white/5 border-r border-white/10 select-none">
+                  +212
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder={t("yourPhone")}
+                  value={customer.customerPhone}
+                  maxLength={9}
+                  onChange={(e) =>
+                    setCustomer({
+                      ...customer,
+                      customerPhone: e.target.value.replace(/\D/g, "").slice(0, 9),
+                    })
+                  }
+                  className="flex-1 min-w-0 bg-transparent p-4 text-white placeholder-white/50 outline-none"
+                />
+              </div>
 
               <textarea
                 placeholder={t("yourAddress")}
