@@ -22,7 +22,7 @@ async function getProduct(id) {
   try {
     const { data } = await axios.get(`${API_URL}/api/products/${id}`);
     return data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

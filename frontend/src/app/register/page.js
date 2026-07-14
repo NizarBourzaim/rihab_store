@@ -8,6 +8,7 @@ import { useLanguage } from "../../context/LanguageContext";
 
 export default function RegisterPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -25,16 +26,11 @@ export default function RegisterPage() {
     setMessage("");
 
     try {
-      const { data } = await axios.post(`${API_URL}/api/auth/register`, form);
+      await axios.post(`${API_URL}/api/auth/register`, form);
 
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      window.dispatchEvent(new Event("userInfoUpdated"));
-      setMessage(t("accountCreatedSuccess"));
-
-      window.location.href = "/";
+      router.push(`/verify-email?email=${encodeURIComponent(form.email)}`);
     } catch (error) {
       setMessage(error.response?.data?.message || t("registrationFailed"));
-    } finally {
       setLoading(false);
     }
   };

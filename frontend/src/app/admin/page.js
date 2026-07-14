@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import API_URL from "../../utils/api";
+import { getStoredUserInfo } from "../../utils/userInfo";
 
 export default function AdminPage() {
   const [products, setProducts] = useState([]);
@@ -14,6 +16,8 @@ export default function AdminPage() {
     price: "",
     image: "",
     description: "",
+    stock: "",
+    preorderDate: "",
   });
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState("");
@@ -21,12 +25,7 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [selectedOrderView, setSelectedOrderView] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-
-  const getUserInfo = () => {
-    if (typeof window === "undefined") return null;
-    const stored = localStorage.getItem("userInfo");
-    return stored ? JSON.parse(stored) : null;
-  };
+  const router = useRouter();
 
   const fetchProducts = async () => {
     try {
@@ -34,12 +33,24 @@ export default function AdminPage() {
       setProducts(data);
     } catch (err) {
       setError("Failed to load products.");
+      console.error("Failed to load products:", err);
     }
   };
 
   const fetchOrders = async () => {
-    const userInfo = getUserInfo();
-    if (!userInfo?.token) return;
+    const userInfo = getStoredUserInfo();
+
+    if (!userInfo?.token) {
+      setError("Admin access required to load orders.");
+      setOrders([]);
+      return;
+    }
+
+    if (!userInfo.isAdmin && !userInfo.isOrderManager) {
+      setError("You need admin or order manager access to view orders.");
+      setOrders([]);
+      return;
+    }
 
     try {
       const { data } = await axios.get(`${API_URL}/api/orders`, {
@@ -47,16 +58,25 @@ export default function AdminPage() {
       });
       setOrders(data);
     } catch (err) {
-      console.error("Failed to fetch orders");
+      setError(err.response?.data?.message || "Failed to fetch orders.");
+      console.error("Failed to fetch orders:", err);
     }
   };
 
   useEffect(() => {
-    const info = getUserInfo();
-    setUserInfo(info);
-    fetchProducts();
-    fetchOrders();
-  }, []);
+    setTimeout(() => {
+      const info = getStoredUserInfo();
+
+      if (!info?.token || (!info.isAdmin && !info.isOrderManager)) {
+        router.push("/login");
+        return;
+      }
+
+      setUserInfo(info);
+      fetchProducts();
+      fetchOrders();
+    }, 0);
+  }, [router]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -66,7 +86,7 @@ export default function AdminPage() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const userInfo = getUserInfo();
+    const userInfo = getStoredUserInfo();
     if (!userInfo?.token) {
       setError("Admin login required for upload.");
       return;
@@ -104,6 +124,8 @@ export default function AdminPage() {
       price: "",
       image: "",
       description: "",
+      stock: "",
+      preorderDate: "",
     });
     setEditingId(null);
   };
@@ -111,7 +133,7 @@ export default function AdminPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const userInfo = getUserInfo();
+    const userInfo = getStoredUserInfo();
 
     if (!userInfo?.token) {
       setError("Admin login required.");
@@ -156,6 +178,8 @@ export default function AdminPage() {
       price: product.price || "",
       image: product.image || "",
       description: product.description || "",
+      stock: product.stock === null || product.stock === undefined ? "" : product.stock,
+      preorderDate: product.preorderDate ? product.preorderDate.slice(0, 10) : "",
     });
     setSuccess("");
     setError("");
@@ -165,7 +189,7 @@ export default function AdminPage() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     
-    const userInfo = getUserInfo();
+    const userInfo = getStoredUserInfo();
 
     if (!userInfo?.token) {
       setError("Admin login required.");
@@ -194,7 +218,7 @@ export default function AdminPage() {
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
-    const userInfo = getUserInfo();
+    const userInfo = getStoredUserInfo();
     if (!userInfo?.token) {
       setError("Admin login required.");
       return;
@@ -235,7 +259,7 @@ export default function AdminPage() {
     if (!selectedOrders.length) return;
     if (!window.confirm(`Are you sure you want to delete ${selectedOrders.length} selected order(s)?`)) return;
 
-    const userInfo = getUserInfo();
+    const userInfo = getStoredUserInfo();
     if (!userInfo?.token) {
       setError("Admin login required.");
       return;
@@ -259,7 +283,7 @@ export default function AdminPage() {
 
   const handleSingleDeleteOrder = async (id) => {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
-    const userInfo = getUserInfo();
+    const userInfo = getStoredUserInfo();
     if (!userInfo?.token) {
       setError("Admin login required.");
       return;
@@ -276,6 +300,39 @@ export default function AdminPage() {
       fetchOrders();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete order.");
+    }
+  };
+
+  const handleRestoreStock = async (order) => {
+    if (
+      !window.confirm(
+        `Restore stock for order #${order.orderNumber}? This will add back the stock this order deducted (e.g. because the payment proof turned out to be fake).`
+      )
+    )
+      return;
+
+    const userInfo = getStoredUserInfo();
+    if (!userInfo?.token) {
+      setError("Admin login required.");
+      return;
+    }
+
+    try {
+      setError("");
+      setSuccess("");
+
+      const { data } = await axios.post(
+        `${API_URL}/api/orders/${order._id}/restore-stock`,
+        {},
+        { headers: { Authorization: `Bearer ${userInfo.token}` } }
+      );
+
+      setSelectedOrderView(data);
+      setSuccess(`Stock restored for order #${order.orderNumber}.`);
+      fetchOrders();
+      fetchProducts();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to restore stock.");
     }
   };
 
@@ -352,6 +409,30 @@ export default function AdminPage() {
             onChange={handleChange}
           />
 
+          <div className="grid sm:grid-cols-2 gap-4">
+            <input
+              className="border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+              type="number"
+              min="0"
+              name="stock"
+              placeholder="Stock (leave blank for unlimited)"
+              value={form.stock}
+              onChange={handleChange}
+            />
+            <div>
+              <label className="block text-xs text-white/40 mb-1 pl-1">
+                Preorder date (shown once stock hits 0)
+              </label>
+              <input
+                className="w-full border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
+                type="date"
+                name="preorderDate"
+                value={form.preorderDate}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
           <div className="flex gap-4">
             <input
               className="flex-grow border border-white/20 bg-white/5 p-4 rounded-2xl text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
@@ -422,7 +503,7 @@ export default function AdminPage() {
         <div className="grid md:grid-cols-3 gap-6">
           {filteredProducts.length === 0 ? (
             <div className="col-span-3 text-center py-10 text-white/50 glass rounded-3xl w-full">
-              No products found matching "{searchQuery}"
+              No products found matching &quot;{searchQuery}&quot;
             </div>
           ) : (
             filteredProducts.map((product) => (
@@ -444,7 +525,21 @@ export default function AdminPage() {
               </p>
               <p className="font-bold mt-4 text-gold-gradient text-lg">{product.price} MAD</p>
 
-              <div className="mt-5 flex gap-3">
+              {(product.stock !== null && product.stock !== undefined) && (
+                <span
+                  className={`mt-2 inline-block w-fit px-3 py-1 rounded-lg text-xs font-bold ${
+                    product.stock > 0
+                      ? "bg-white/10 text-white/70"
+                      : "bg-red-600 text-white"
+                  }`}
+                >
+                  {product.stock > 0
+                    ? `${product.stock} in stock`
+                    : `Out of Stock${product.preorderDate ? ` — Preorder, available ${new Date(product.preorderDate).toLocaleDateString()}` : " — Preorder"}`}
+                </span>
+              )}
+
+              <div className="mt-3 flex gap-3">
                 <button
                   onClick={() => handleEdit(product)}
                   className="flex-1 btn-secondary text-sm py-2 px-0 min-w-0"
@@ -515,13 +610,14 @@ export default function AdminPage() {
               <th className="p-5 font-semibold text-white/70">Total</th>
               <th className="p-5 font-semibold text-white/70">Date</th>
               <th className="p-5 font-semibold text-white/70">Status</th>
+              <th className="p-5 font-semibold text-white/70 text-center">Payment Proof</th>
               <th className="p-5 font-semibold text-white/70 text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan="7" className="p-10 text-center text-white/50">No orders found matching your search.</td>
+                <td colSpan="8" className="p-10 text-center text-white/50">No orders found matching your search.</td>
               </tr>
             ) : (
               filteredOrders.map((order) => (
@@ -536,7 +632,19 @@ export default function AdminPage() {
                       />
                     )}
                   </td>
-                  <td className="p-5 font-mono text-sm text-[rgba(251,245,183,0.8)]">{order.orderNumber}</td>
+                  <td className="p-5 font-mono text-sm text-[rgba(251,245,183,0.8)]">
+                    {order.orderNumber}
+                    {order.hasPreorderItems && (
+                      <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-600 text-white align-middle">
+                        PREORDER
+                      </span>
+                    )}
+                    {order.stockRestored && (
+                      <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/10 text-white/50 align-middle">
+                        RESTORED
+                      </span>
+                    )}
+                  </td>
                   <td className="p-5">
                     <div className="font-medium">{order.customerName}</div>
                     <div className="text-sm text-white/50">{order.customerPhone}</div>
@@ -563,6 +671,34 @@ export default function AdminPage() {
                       <option value="delivered" className="bg-white text-black font-semibold">🟢 Delivered</option>
                       <option value="canceled" className="bg-white text-black font-semibold">🔴 Canceled</option>
                     </select>
+                  </td>
+                  <td className="p-5 text-center">
+                    <div className="inline-flex items-center gap-2">
+                      <span
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                          order.paymentProofUrl
+                            ? "bg-green-500 text-white"
+                            : "bg-red-600 text-white"
+                        }`}
+                      >
+                        {order.paymentProofUrl ? "Submitted" : "No Proof"}
+                      </span>
+                      <button
+                        onClick={() => order.paymentProofUrl && window.open(order.paymentProofUrl, "_blank", "noopener,noreferrer")}
+                        disabled={!order.paymentProofUrl}
+                        title={order.paymentProofUrl ? "View Payment Proof" : "No proof submitted yet"}
+                        className={`inline-flex items-center justify-center p-2 rounded-full transition-colors ${
+                          order.paymentProofUrl
+                            ? "text-white/40 hover:text-gold hover:bg-gold/10 cursor-pointer"
+                            : "text-white/15 cursor-not-allowed"
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                    <td className="p-5 text-center flex items-center justify-center gap-2">
                     <button
@@ -647,9 +783,51 @@ export default function AdminPage() {
                 <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Shipping Address</h4>
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
                   <p className="text-white/80 leading-relaxed italic">
-                    "{selectedOrderView.customerAddress || "No address provided"}"
+                    &quot;{selectedOrderView.customerAddress || "No address provided"}&quot;
                   </p>
                 </div>
+              </div>
+
+              {/* Payment Proof */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-white/30 mb-3">Payment Proof</h4>
+                {selectedOrderView.paymentProofUrl ? (
+                  <a
+                    href={selectedOrderView.paymentProofUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/20 transition-colors"
+                  >
+                    {/\.pdf($|\?)/i.test(selectedOrderView.paymentProofUrl) ? (
+                      <span className="text-gold-gradient font-semibold">View PDF Receipt</span>
+                    ) : (
+                      <img
+                        src={selectedOrderView.paymentProofUrl}
+                        alt="Payment proof"
+                        className="max-h-64 rounded-xl object-contain mx-auto"
+                      />
+                    )}
+                  </a>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <p className="text-white/50 italic">No proof submitted yet</p>
+                  </div>
+                )}
+
+                {selectedOrderView.items?.some((item) => item.stockDeducted > 0) && (
+                  selectedOrderView.stockRestored ? (
+                    <span className="mt-3 inline-block px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/50">
+                      Stock already restored for this order
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleRestoreStock(selectedOrderView)}
+                      className="mt-3 bg-green-600/80 hover:bg-green-600 text-white font-semibold rounded-full text-sm py-2 px-5 transition-colors border border-transparent"
+                    >
+                      Restore Stock (fake/canceled order)
+                    </button>
+                  )
+                )}
               </div>
 
               {/* Items */}
@@ -662,7 +840,14 @@ export default function AdminPage() {
                         <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shadow-lg" />
                       )}
                       <div className="flex-grow">
-                        <p className="font-semibold">{item.name}</p>
+                        <p className="font-semibold">
+                          {item.name}
+                          {item.isPreorder && (
+                            <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-600 text-white align-middle">
+                              PREORDER{item.preorderDate ? ` — ${new Date(item.preorderDate).toLocaleDateString()}` : ""}
+                            </span>
+                          )}
+                        </p>
                         <p className="text-xs text-white/50">{item.price} MAD x {item.qty || 1}</p>
                       </div>
                       <div className="text-right font-bold text-gold-gradient">

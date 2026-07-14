@@ -6,20 +6,24 @@ import { useRouter } from "next/navigation";
 import API_URL from "../../utils/api";
 import Link from "next/link";
 import { useLanguage } from "../../context/LanguageContext";
+import { storeUserInfo } from "../../utils/userInfo";
 
 export default function LoginPage() {
   const { t } = useLanguage();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setNeedsVerification(false);
+
     try {
       const { data } = await axios.post(`${API_URL}/api/auth/login`, form);
-      localStorage.setItem("userInfo", JSON.stringify(data));
-      window.dispatchEvent(new Event("userInfoUpdated"));
+      storeUserInfo(data);
 
       if (data.isAdmin || data.isOrderManager) {
         router.push("/admin");
@@ -27,6 +31,9 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (err) {
+      if (err.response?.status === 403 && err.response?.data?.needsVerification) {
+        setNeedsVerification(true);
+      }
       setError(err.response?.data?.message || t("loginFailed"));
     }
   };
@@ -35,7 +42,22 @@ export default function LoginPage() {
     <div className="max-w-md mx-auto p-8 mt-10 glass rounded-3xl text-white">
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("login")}</h1>
 
-      {error && <p className="mb-4 text-red-500 text-sm">{error}</p>}
+      {error && (
+        <p className="mb-4 text-red-500 text-sm">
+          {error}
+          {needsVerification && (
+            <>
+              {" "}
+              <Link
+                href={`/verify-email?email=${encodeURIComponent(form.email)}`}
+                className="text-gold-gradient font-bold hover:underline"
+              >
+                {t("verifyNow")}
+              </Link>
+            </>
+          )}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="grid gap-5">
         <input
@@ -76,7 +98,7 @@ export default function LoginPage() {
       </form>
 
       <div className="mt-6 flex flex-col gap-3 text-center text-sm">
-        <Link href="/forgot-password" ring-offset-2 className="text-white/50 hover:text-white transition-colors">
+        <Link href="/forgot-password" className="text-white/50 hover:text-white transition-colors">
           {t("forgotPassword")}
         </Link>
         <div className="text-white/30">

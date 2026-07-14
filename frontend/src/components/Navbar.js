@@ -1,49 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useUserInfo } from "../hooks/useUserInfo";
+import { clearStoredUserInfo } from "../utils/userInfo";
 
 export default function Navbar() {
   const { t, language, changeLanguage } = useLanguage();
   const cart = useCart() || {};
   const cartItems = Array.isArray(cart.cartItems) ? cart.cartItems : [];
 
-  const [userInfo, setUserInfo] = useState(null);
+  const userInfo = useUserInfo();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-
-  const loadUserInfo = () => {
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("userInfo")
-        : null;
-
-    setUserInfo(stored ? JSON.parse(stored) : null);
-  };
-
-  useEffect(() => {
-    loadUserInfo();
-
-    const handleUserInfoUpdated = () => {
-      loadUserInfo();
-    };
-
-    window.addEventListener("userInfoUpdated", handleUserInfoUpdated);
-    window.addEventListener("storage", handleUserInfoUpdated);
-
-    return () => {
-      window.removeEventListener("userInfoUpdated", handleUserInfoUpdated);
-      window.removeEventListener("storage", handleUserInfoUpdated);
-    };
-  }, []);
 
   const totalQty = cartItems.reduce((sum, item) => sum + (item.qty || 0), 0);
 
   const handleLogout = () => {
-    localStorage.removeItem("userInfo");
-    window.dispatchEvent(new Event("userInfoUpdated"));
+    clearStoredUserInfo();
     window.location.href = "/";
   };
 

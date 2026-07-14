@@ -5,8 +5,35 @@ import Link from "next/link";
 import axios from "axios";
 import { useCart } from "../../context/CartContext";
 import API_URL from "../../utils/api";
+import bankDetails from "../../utils/bankDetails";
 
 import { useLanguage } from "../../context/LanguageContext";
+
+function CopyField({ label, value, t }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl p-4">
+      <div className="min-w-0">
+        <p className="text-xs uppercase tracking-widest text-white/40">{label}</p>
+        <p className="font-mono text-white break-all mt-1">{value}</p>
+      </div>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="shrink-0 bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-2 rounded-xl text-sm transition-colors"
+      >
+        {copied ? t("copied") : t("copy")}
+      </button>
+    </div>
+  );
+}
 
 export default function CartPage() {
   const { t } = useLanguage();
@@ -21,6 +48,11 @@ export default function CartPage() {
   const [orderInfo, setOrderInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const [proofFile, setProofFile] = useState(null);
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [proofSubmitted, setProofSubmitted] = useState(false);
+  const [proofError, setProofError] = useState("");
 
   // Removed automatic pre-filling of customer info to keep it clean for every order
   useEffect(() => {
@@ -75,6 +107,33 @@ export default function CartPage() {
     }
   };
 
+  const handleSubmitProof = async () => {
+    if (!proofFile) {
+      setProofError(t("proofRequired"));
+      return;
+    }
+
+    setProofError("");
+    setUploadingProof(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("proof", proofFile);
+
+      await axios.post(
+        `${API_URL}/api/orders/${orderInfo.orderId}/payment-proof`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      setProofSubmitted(true);
+    } catch (error) {
+      setProofError(error.response?.data?.message || t("proofUploadFailed"));
+    } finally {
+      setUploadingProof(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("cart")}</h1>
@@ -86,26 +145,104 @@ export default function CartPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4">{t("orderSuccess")}</h2>
-          <p className="text-white/70 text-lg mb-8 max-w-md mx-auto">
-            {t("orderNumber")} <span className="text-[#D4AF37] font-mono font-bold">#{orderInfo?.orderNumber}</span>. {t("contactSoon")}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/products" className="btn-main px-8">
-              {t("continueShopping")}
-            </Link>
-            {orderInfo?.downloadUrl && (
-              <a 
-                href={`${API_URL}${orderInfo.downloadUrl}`}
-                className="btn-secondary px-8 flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                {t("downloadReceipt")}
-              </a>
-            )}
-          </div>
+          <h2 className="text-3xl font-bold text-white mb-4">
+            {proofSubmitted ? t("orderConfirmed") : t("orderSuccess")}
+          </h2>
+
+          {proofSubmitted && (
+            <p className="text-white/70 text-lg mb-4 max-w-md mx-auto">
+              {t("orderNumber")} <span className="text-[#D4AF37] font-mono font-bold">#{orderInfo?.orderNumber}</span>. {t("contactSoon")}
+            </p>
+          )}
+
+          {proofSubmitted && orderInfo?.hasPreorderItems && (
+            <div className="text-left max-w-md mx-auto mb-8 bg-purple-500/10 border border-purple-500/30 rounded-2xl p-4">
+              <p className="text-purple-200 text-sm">{t("preorderOrderNotice")}</p>
+              <ul className="mt-2 space-y-1">
+                {orderInfo.preorderItems?.map((item, idx) => (
+                  <li key={idx} className="text-purple-200/80 text-xs">
+                    • {item.name}
+                    {item.preorderDate && ` — ${t("expectedAvailability")} ${new Date(item.preorderDate).toLocaleDateString()}`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {!proofSubmitted && (
+            <>
+              <div className="text-left max-w-md mx-auto mb-8 bg-white/5 border border-white/10 rounded-3xl p-6">
+                <h3 className="text-xl font-bold text-gold-gradient mb-4 text-center">
+                  {t("bankTransferDetails")}
+                </h3>
+
+                <div className="grid gap-3">
+                  <CopyField label={t("bankNameLabel")} value={bankDetails.bankName} t={t} />
+                  <CopyField label={t("ribLabel")} value={bankDetails.rib} t={t} />
+                  <CopyField label={t("accountHolderLabel")} value={bankDetails.accountHolder} t={t} />
+                  <CopyField label={t("paymentReference")} value={orderInfo?.orderNumber || ""} t={t} />
+                </div>
+
+                <p className="text-white/50 text-sm mt-4">{t("paymentReferenceNote")}</p>
+              </div>
+
+              <div className="text-left max-w-md mx-auto bg-white/5 border border-white/10 rounded-3xl p-6">
+                <h3 className="text-xl font-bold text-gold-gradient mb-2 text-center">
+                  {t("uploadProofTitle")}
+                </h3>
+                <p className="text-white/50 text-sm mb-4 text-center">
+                  {t("uploadProofInstructions")}
+                </p>
+
+                {proofError && (
+                  <p className="text-red-400 text-sm mb-3 text-center">{proofError}</p>
+                )}
+
+                <label className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-colors">
+                  <span className="text-white/70 text-sm truncate">
+                    {proofFile ? proofFile.name : t("noFileChosen")}
+                  </span>
+                  <span className="shrink-0 bg-white/10 border border-white/10 text-white px-4 py-2 rounded-xl text-sm">
+                    {t("chooseFile")}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setProofFile(e.target.files[0] || null)}
+                    className="hidden"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handleSubmitProof}
+                  disabled={uploadingProof}
+                  className="btn-main w-full mt-4 disabled:opacity-60"
+                >
+                  {uploadingProof ? t("submittingProof") : t("submitProof")}
+                </button>
+              </div>
+            </>
+          )}
+
+          {proofSubmitted && (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/products" className="btn-main px-8">
+                {t("continueShopping")}
+              </Link>
+              {orderInfo?.downloadUrl && (
+                <a
+                  href={`${API_URL}${orderInfo.downloadUrl}`}
+                  className="btn-secondary px-8 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  {t("downloadReceipt")}
+                </a>
+              )}
+            </div>
+          )}
         </div>
       ) : cartItems.length === 0 ? (
         <div className="glass rounded-3xl p-8 text-center text-white">
@@ -139,7 +276,14 @@ export default function CartPage() {
                   )}
 
                   <div>
-                    <h2 className="font-semibold text-xl">{item.name}</h2>
+                    <h2 className="font-semibold text-xl">
+                      {item.name}
+                      {item.stock !== null && item.stock !== undefined && item.stock <= 0 && (
+                        <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-600 text-white align-middle">
+                          {t("preorderBadge")}
+                        </span>
+                      )}
+                    </h2>
                     <p className="text-white/60 mt-1 line-clamp-1">{item.description}</p>
                     <p className="font-bold mt-2 text-gold-gradient">{item.price} {t("mad")}</p>
                   </div>
@@ -149,6 +293,7 @@ export default function CartPage() {
                   <input
                     type="number"
                     min="1"
+                    max={item.stock !== null && item.stock !== undefined && item.stock > 0 ? item.stock : undefined}
                     value={item.qty}
                     onChange={(e) => updateQty(item._id, e.target.value)}
                     className="border border-white/20 bg-white/5 rounded-2xl p-3 w-20 text-white text-center focus:border-[rgba(212,175,55,0.5)] outline-none"

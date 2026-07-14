@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 
 const CartContext = createContext({
   cartItems: [],
@@ -11,31 +11,47 @@ const CartContext = createContext({
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const isLoaded = useRef(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("cartItems");
     if (stored) {
-      setCartItems(JSON.parse(stored));
+      setTimeout(() => {
+        setCartItems(JSON.parse(stored));
+        isLoaded.current = true;
+      }, 0);
+    } else {
+      isLoaded.current = true;
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    if (isLoaded.current) {
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    }
   }, [cartItems]);
+
+  // Tracked (non-null) and > 0 means limited stock: cap quantity at what's available.
+  // Tracked and <= 0, or untracked (null), both mean no cap — the item is a preorder or unlimited.
+  const stockCap = (product) =>
+    product.stock !== null && product.stock !== undefined && product.stock > 0
+      ? product.stock
+      : Infinity;
 
   const addToCart = (product) => {
     const exists = cartItems.find((item) => item._id === product._id);
+    const cap = stockCap(product);
 
     if (exists) {
       setCartItems(
         cartItems.map((item) =>
           item._id === product._id
-            ? { ...item, qty: item.qty + 1 }
+            ? { ...item, qty: Math.min(item.qty + 1, cap) }
             : item
         )
       );
     } else {
-      setCartItems([...cartItems, { ...product, qty: 1 }]);
+      setCartItems([...cartItems, { ...product, qty: Math.min(1, cap) }]);
     }
   };
 
@@ -46,7 +62,7 @@ export const CartProvider = ({ children }) => {
   const updateQty = (id, qty) => {
     setCartItems(
       cartItems.map((item) =>
-        item._id === id ? { ...item, qty: Number(qty) } : item
+        item._id === id ? { ...item, qty: Math.min(Number(qty), stockCap(item)) } : item
       )
     );
   };

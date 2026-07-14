@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Navbar from "../../components/Navbar";
 import API_URL from "../../utils/api";
+import { getStoredUserInfo, storeUserInfo, clearStoredUserInfo } from "../../utils/userInfo";
 
 export default function ProfilePage() {
   const [form, setForm] = useState({
@@ -15,20 +15,23 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const storedUserInfo = getStoredUserInfo();
 
-        if (!token) {
+        if (!storedUserInfo?.token) {
           window.location.href = "/login";
           return;
         }
 
+        setUserInfo(storedUserInfo);
+
         const { data } = await axios.get(`${API_URL}/api/auth/me`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${storedUserInfo.token}`,
           },
         });
 
@@ -37,9 +40,8 @@ export default function ProfilePage() {
           name: data.name || "",
           email: data.email || "",
         }));
-      } catch (error) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+      } catch {
+        clearStoredUserInfo();
         window.location.href = "/login";
       } finally {
         setLoadingProfile(false);
@@ -55,7 +57,11 @@ export default function ProfilePage() {
     setMessage("");
 
     try {
-      const token = localStorage.getItem("token");
+      const storedUserInfo = getStoredUserInfo();
+      if (!storedUserInfo?.token) {
+        window.location.href = "/login";
+        return;
+      }
 
       const { data } = await axios.put(
         `${API_URL}/api/auth/me`,
@@ -67,12 +73,13 @@ export default function ProfilePage() {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${storedUserInfo.token}`,
           },
         }
       );
 
-      localStorage.setItem("user", JSON.stringify(data.user));
+      storeUserInfo(data);
+      setUserInfo(data);
       setMessage("Profile updated successfully");
       setForm((prev) => ({
         ...prev,
@@ -87,16 +94,12 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearStoredUserInfo();
     window.location.href = "/login";
   };
 
   return (
-    <>
-      <Navbar />
-
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden py-16">
+    <section className="relative min-h-[85vh] flex items-center overflow-hidden py-16">
         <div className="container-custom relative z-10">
           <div className="max-w-2xl mx-auto glass rounded-[32px] p-8 md:p-10">
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-gold-gradient">
@@ -175,6 +178,5 @@ export default function ProfilePage() {
           </div>
         </div>
       </section>
-    </>
   );
 }

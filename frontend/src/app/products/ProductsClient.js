@@ -100,11 +100,22 @@ export default function ProductsClient({ initialProducts = [] }) {
             <p className="font-bold mt-4 text-gold-gradient text-lg">
               {product.price} {t("mad")}
             </p>
+
+            {product.stock !== null && product.stock !== undefined && (
+              <p className={`text-xs font-semibold mt-1 ${product.stock > 0 ? "text-white/40" : "text-red-400"}`}>
+                {product.stock > 0
+                  ? `${product.stock} ${t("itemsLeft")}`
+                  : t("outOfStock")}
+              </p>
+            )}
+
             <button
               onClick={() => addToCart(product)}
               className="mt-4 w-full btn-main text-sm py-3"
             >
-              {t("addToCart")}
+              {product.stock !== null && product.stock !== undefined && product.stock <= 0
+                ? t("preorderNow")
+                : t("addToCart")}
             </button>
           </motion.div>
         ))}
