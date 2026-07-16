@@ -102,11 +102,21 @@ export default function ProductsClient({ initialProducts = [] }) {
             </p>
 
             {product.stock !== null && product.stock !== undefined && (
-              <p className={`text-xs font-semibold mt-1 ${product.stock > 0 ? "text-white/40" : "text-red-400"}`}>
-                {product.stock > 0
-                  ? `${product.stock} ${t("itemsLeft")}`
-                  : t("outOfStock")}
-              </p>
+              <div className="mt-1">
+                {product.stock > 0 ? (
+                  <>
+                    <p className="text-xs font-bold text-red-500 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      {t("limitedStock")}
+                    </p>
+                    <p className="text-xs font-bold text-gold-gradient mt-1">
+                      {product.stock} {t("itemsLeft")}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs font-bold text-red-500">{t("outOfStock")}</p>
+                )}
+              </div>
             )}
 
             <button

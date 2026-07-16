@@ -69,11 +69,24 @@ export default function ProductDetailsClient({ initialProduct }) {
               </div>
 
               {product.stock !== null && product.stock !== undefined && (
-                <p className={`text-sm font-semibold mt-3 ${product.stock > 0 ? "text-white/50" : "text-red-400"}`}>
-                  {product.stock > 0
-                    ? `${product.stock} ${t("itemsLeft")}`
-                    : `${t("outOfStock")}${product.preorderDate ? ` — ${t("expectedAvailability")} ${new Date(product.preorderDate).toLocaleDateString()}` : ""}`}
-                </p>
+                <div className="mt-3">
+                  {product.stock > 0 ? (
+                    <>
+                      <p className="text-sm font-bold text-red-500 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        {t("limitedStock")}
+                      </p>
+                      <p className="text-sm font-bold text-gold-gradient mt-3">
+                        {product.stock} {t("itemsLeft")}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm font-bold text-red-500">
+                      {t("outOfStock")}
+                      {product.preorderDate ? ` — ${t("expectedAvailability")} ${new Date(product.preorderDate).toLocaleDateString()}` : ""}
+                    </p>
+                  )}
+                </div>
               )}
 
               <button

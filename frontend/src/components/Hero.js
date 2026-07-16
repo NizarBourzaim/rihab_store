@@ -20,14 +20,14 @@ export default function Hero() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="mt-6 flex justify-center px-4"
+            className="mt-6 flex justify-center"
           >
             <Image
               src="/logo.png"
               alt="Rinifaza Store"
               width={1872}
               height={546}
-              className="object-contain drop-shadow-[0_0_40px_rgba(212,175,55,0.5)] w-full max-w-[320px] sm:max-w-[500px] md:max-w-[650px] lg:max-w-[750px] h-auto"
+              className="object-contain drop-shadow-[0_0_40px_rgba(212,175,55,0.5)] w-full max-w-[420px] sm:max-w-[600px] md:max-w-[750px] lg:max-w-[900px] h-auto"
               priority
             />
           </motion.div>

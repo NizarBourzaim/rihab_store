@@ -145,10 +145,25 @@ export default function CartPage() {
 
       {isSuccess ? (
         <div className="glass rounded-[32px] p-10 text-center animate-fade-in">
-          <div className="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
-            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
+          <div
+            className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border ${
+              proofSubmitted
+                ? "bg-green-500/20 text-green-500 border-green-500/30"
+                : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+            }`}
+          >
+            {proofSubmitted ? (
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 3h12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 21h12" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3c0 5.5 4 6.5 5 9c-1 2.5 -5 3.5 -5 9" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 3c0 5.5 -4 6.5 -5 9c1 2.5 5 3.5 5 9" />
+              </svg>
+            )}
           </div>
           <h2 className="text-3xl font-bold text-white mb-4">
             {proofSubmitted ? t("orderConfirmed") : t("orderSuccess")}

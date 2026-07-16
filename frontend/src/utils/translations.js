@@ -3,7 +3,7 @@ export const translations = {
     // Navbar
     home: "Home",
     products: "Products",
-    about: "About",
+    about: "About Us",
     cart: "Cart",
     login: "Login",
     register: "Register",
@@ -38,7 +38,7 @@ export const translations = {
 
     // About Page
     aboutEyebrow: "Our Story",
-    aboutTitle: "About Rinifaza Store",
+    aboutTitle: "Rinifaza",
     aboutIntro: "Rinifaza Store was born from a simple belief: modest fashion deserves to feel luxurious. We curate elegant, high-quality pieces for women who refuse to compromise between their values and their style.",
     aboutStoryTitle: "Our Story: A Family Vision of Modest Luxury",
     aboutStoryIntro: "Behind every great brand lies a true story—a frustration transformed into ambition.",
@@ -110,6 +110,7 @@ export const translations = {
     outOfStock: "Out of Stock",
     preorderNow: "Preorder Now",
     itemsLeft: "left",
+    limitedStock: "Limited Stock",
     expectedAvailability: "Expected availability:",
     preorderBadge: "Preorder",
     preorderOrderNotice: "Some items in your order are on preorder. We'll contact you as soon as they're available.",
@@ -121,7 +122,7 @@ export const translations = {
     yourAddress: "Your Address",
     fillAllFields: "Please fill in all fields.",
     invalidPhone: "Please enter a valid 9-digit Moroccan phone number (e.g. 6XX XX XX XX).",
-    deliveryNotice: "Your order will be delivered within 48 hours of confirmation.",
+    deliveryNotice: "Your order will be delivered within 48h to 72h of the drop-off confirmation.",
     orderError: "Failed to create order.",
     creatingOrder: "Creating Order...",
     goToProducts: "Go to Products",
@@ -199,7 +200,7 @@ export const translations = {
 
     // About Page
     aboutEyebrow: "Notre Histoire",
-    aboutTitle: "À Propos de Rinifaza Store",
+    aboutTitle: "Rinifaza",
     aboutIntro: "Rinifaza Store est né d'une conviction simple : la mode modeste mérite d'être luxueuse. Nous sélectionnons des pièces élégantes et de haute qualité pour les femmes qui refusent de choisir entre leurs valeurs et leur style.",
     aboutStoryTitle: "Notre Histoire : Une Vision Familiale du Luxe Modeste",
     aboutStoryIntro: "Derrière chaque grande marque se cache une histoire vraie — une frustration transformée en ambition.",
@@ -271,6 +272,7 @@ export const translations = {
     outOfStock: "Rupture de Stock",
     preorderNow: "Précommander",
     itemsLeft: "restant(s)",
+    limitedStock: "Stock Limité",
     expectedAvailability: "Disponibilité prévue :",
     preorderBadge: "Précommande",
     preorderOrderNotice: "Certains articles de votre commande sont en précommande. Nous vous contacterons dès qu'ils seront disponibles.",
@@ -360,7 +362,7 @@ export const translations = {
 
     // About Page
     aboutEyebrow: "قصتنا",
-    aboutTitle: "عن متجر رينيفازا",
+    aboutTitle: "رينيفازا",
     aboutIntro: "وُلد متجر رينيفازا من إيمان بسيط: الأزياء المحتشمة تستحق أن تكون فاخرة. نختار بعناية قطعاً أنيقة وعالية الجودة للمرأة التي ترفض التنازل بين قيمها وأناقتها.",
     aboutStoryTitle: "قصتنا: رؤية عائلية للفخامة المحتشمة",
     aboutStoryIntro: "خلف كل علامة تجارية عظيمة تكمن قصة حقيقية - إحباط تحوّل إلى طموح.",
@@ -432,6 +434,7 @@ export const translations = {
     outOfStock: "نفدت الكمية",
     preorderNow: "اطلب مسبقاً",
     itemsLeft: "متبقي",
+    limitedStock: "كمية محدودة",
     expectedAvailability: "التوفر المتوقع:",
     preorderBadge: "طلب مسبق",
     preorderOrderNotice: "بعض عناصر طلبك متوفرة كطلب مسبق. سنتواصل معك بمجرد توفرها.",
