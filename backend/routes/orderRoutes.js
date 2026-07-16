@@ -10,6 +10,7 @@ const path = require("path");
 const { appendOrderToExcel } = require("../utils/orderExcel");
 const { appendOrderToGoogleSheets, updateOrderStatusInGoogleSheets } = require("../utils/googleSheets");
 const { protect, adminOnly, staffOnly } = require("../middleware/authMiddleware");
+const { sendEmail } = require("../utils/sendEmail");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -158,11 +159,59 @@ router.post(
       await order.save();
 
       res.json({ paymentProofUrl: order.paymentProofUrl });
+
+      // Notify the store owner — fire after responding so a slow/failed email
+      // never delays or breaks the customer's checkout.
+      notifyOwnerOfProof(order).catch((err) =>
+        console.error("Failed to send owner notification email:", err.message)
+      );
     } catch (error) {
       res.status(500).json({ message: "Upload failed: " + error.message });
     }
   }
 );
+
+const NOTIFY_RECIPIENTS = [
+  process.env.EMAIL_USER,
+  "mehdibenmhand4@gmail.com",
+  "rihab.bourzaim211@gmail.com",
+].join(", ");
+
+function notifyOwnerOfProof(order) {
+  const itemsList = order.items
+    .map((item) => `${item.name} (x${item.qty}) — ${item.price * item.qty} MAD`)
+    .join("<br>");
+
+  const isPdf = /\.pdf($|\?)/i.test(order.paymentProofUrl);
+  const proofHtml = isPdf
+    ? `<a href="${order.paymentProofUrl}" style="color: #D4AF37; font-weight: bold;">View PDF Receipt</a>`
+    : `<img src="${order.paymentProofUrl}" alt="Payment proof" style="max-width: 100%; border-radius: 8px; border: 1px solid #eee;" />`;
+
+  return sendEmail({
+    to: NOTIFY_RECIPIENTS,
+    subject: `New order awaiting review — #${order.orderNumber}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #D4AF37; text-align: center;">New Payment Proof Submitted</h2>
+        <p>A customer just completed checkout and uploaded proof of payment. Please review it in the admin panel.</p>
+        <p>
+          <strong>Order Number:</strong> ${order.orderNumber}<br>
+          <strong>Customer:</strong> ${order.customerName}<br>
+          <strong>Phone:</strong> ${order.customerPhone}<br>
+          <strong>Address:</strong> ${order.customerAddress || "Not provided"}<br>
+          <strong>Total:</strong> ${order.total} MAD
+        </p>
+        <p><strong>Items:</strong><br>${itemsList}</p>
+        <div style="text-align: center; margin: 25px 0;">
+          ${proofHtml}
+        </div>
+        <div style="text-align: center;">
+          <a href="${process.env.CLIENT_URL}/admin" style="background-color: #D4AF37; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Open Admin Panel</a>
+        </div>
+      </div>
+    `,
+  });
+}
 
 const PDFDocument = require("pdfkit");
 
