@@ -39,7 +39,7 @@ export const translations = {
     // About Page
     aboutEyebrow: "Our Story",
     aboutTitle: "RINIFAZA",
-    aboutIntro: "Rinifaza  was born from a simple belief: modest fashion deserves to feel luxurious. We curate elegant, high-quality pieces for women who refuse to compromise between their values and their style.",
+    aboutIntro: "RINIFAZA  was born from a simple belief: modest fashion deserves to feel luxurious. We curate elegant, high-quality pieces for women who refuse to compromise between their values and their style.",
     aboutStoryTitle: "Our Story: A Family Vision of Modest Luxury",
     aboutStoryIntro: "Behind every great brand lies a true story—a frustration transformed into ambition.",
     aboutStorySection1Title: "A Family Affair: The Power of a Trio",
