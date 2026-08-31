@@ -35,7 +35,7 @@ function appendOrderToExcel(order) {
     Items: order.items
       .map(
         (item) =>
-          `${item.name} | qty: ${item.qty} | price: ${item.price} | image: ${item.image || ""}`
+          `${item.name}${item.size ? ` [${item.size}]` : ""} | qty: ${item.qty} | price: ${item.price} | image: ${item.image || ""}`
       )
       .join(" || "),
     Total: order.total,

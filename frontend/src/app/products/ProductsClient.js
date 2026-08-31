@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import API_URL from "../../utils/api";
 import { useLanguage } from "../../context/LanguageContext";
+import BackButton from "../../components/BackButton";
 
 export default function ProductsClient({ initialProducts = [] }) {
   const { t } = useLanguage();
@@ -57,6 +58,8 @@ export default function ProductsClient({ initialProducts = [] }) {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
+      <BackButton fallbackUrl="/" />
+
       <motion.h1 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -119,13 +122,35 @@ export default function ProductsClient({ initialProducts = [] }) {
               </div>
             )}
 
+            {/* Size badges preview */}
+            {Array.isArray(product.sizes) && product.sizes.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5 items-center">
+                {product.sizes.map((s) => (
+                  <span
+                    key={s}
+                    className="px-2 py-0.5 rounded text-[11px] font-bold bg-[#D4AF37]/15 text-[#FBF5B7] border border-[#D4AF37]/25"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <button
-              onClick={() => addToCart(product)}
+              onClick={() => {
+                if (Array.isArray(product.sizes) && product.sizes.length > 0) {
+                  router.push(`/products/${product._id}`);
+                } else {
+                  addToCart(product);
+                }
+              }}
               className="mt-4 w-full btn-main text-sm py-3"
             >
-              {product.stock !== null && product.stock !== undefined && product.stock <= 0
-                ? t("preorderNow")
-                : t("addToCart")}
+              {Array.isArray(product.sizes) && product.sizes.length > 0
+                ? t("selectSize")
+                : product.stock !== null && product.stock !== undefined && product.stock <= 0
+                  ? t("preorderNow")
+                  : t("addToCart")}
             </button>
           </motion.div>
         ))}

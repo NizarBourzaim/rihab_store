@@ -31,6 +31,14 @@ const proofUploadLimiter = rateLimit({
   message: { message: "Too many attempts. Please try again later." },
 });
 
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many orders from this device. Please try again later." },
+});
+
 function generateOrderNumber() {
   const now = new Date();
   const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(
@@ -40,38 +48,65 @@ function generateOrderNumber() {
   return `RNFZ-${datePart}-${randomPart}`;
 }
 
-router.post("/whatsapp", async (req, res) => {
+router.post("/whatsapp", orderLimiter, async (req, res) => {
   try {
-    const { customerName, customerPhone, customerAddress, items, total } = req.body;
+    const { customerName, customerPhone, customerAddress, items } = req.body;
 
-    if (!customerName || !customerPhone || !items || !items.length) {
+    if (
+      typeof customerName !== "string" || !customerName ||
+      typeof customerPhone !== "string" || !customerPhone ||
+      !Array.isArray(items) || !items.length
+    ) {
       return res.status(400).json({ message: "Missing required order fields" });
     }
 
+    // Price and name always come from the current Product record, never from the
+    // client — otherwise a tampered request could check out at any price it likes.
     // Decrement tracked stock per item; anything already at/below 0 becomes a preorder.
     // stockDeducted is the actual amount taken out of real stock (may be less than qty
     // if stock ran out mid-order) — it's what a later restore-stock call gives back.
     const processedItems = [];
+    let total = 0;
+
     for (const item of items) {
+      const qty = Number(item?.qty);
+      if (!item?.productId || !Number.isFinite(qty) || qty <= 0) {
+        return res.status(400).json({ message: "Invalid item in cart" });
+      }
+
+      const product = await Product.findById(item.productId).catch(() => null);
+      if (!product) {
+        return res.status(400).json({ message: "One of the items in your cart is no longer available" });
+      }
+
       let isPreorder = false;
       let preorderDate = null;
       let stockDeducted = 0;
+      const size = typeof item?.size === "string" ? item.size.trim() : "";
 
-      const product = item.productId
-        ? await Product.findById(item.productId).catch(() => null)
-        : null;
-
-      if (product && product.stock !== null && product.stock !== undefined) {
+      if (product.stock !== null && product.stock !== undefined) {
         const stockBefore = product.stock;
         isPreorder = stockBefore <= 0;
-        const newStock = Math.max(stockBefore - Number(item.qty || 0), 0);
+        const newStock = Math.max(stockBefore - qty, 0);
         stockDeducted = stockBefore - newStock;
         product.stock = newStock;
         await product.save();
         if (isPreorder) preorderDate = product.preorderDate;
       }
 
-      processedItems.push({ ...item, isPreorder, preorderDate, stockDeducted });
+      total += product.price * qty;
+
+      processedItems.push({
+        productId: product._id.toString(),
+        name: product.name,
+        price: product.price,
+        qty,
+        size,
+        image: product.image || "",
+        isPreorder,
+        preorderDate,
+        stockDeducted,
+      });
     }
 
     const hasPreorderItems = processedItems.some((item) => item.isPreorder);
@@ -94,20 +129,18 @@ router.post("/whatsapp", async (req, res) => {
     const businessPhone = "+212699613920"; // replace with your WhatsApp number
 
     const messageLines = [
-  `New Order`,
-  `Order Number: ${order.orderNumber}`,
-  `Customer: ${order.customerName}`,
-  `Phone: ${order.customerPhone}`,
-  `Address: ${order.customerAddress || "Not provided"}`,
-  "",
-  ...order.items.map(
-    (item, index) =>
-      `${index + 1}. ${item.name}
-      Qty: ${item.qty}
-      Price: ${item.price} MAD`
-     ),
+      `New Order`,
+      `Order Number: ${order.orderNumber}`,
+      `Customer: ${order.customerName}`,
+      `Phone: ${order.customerPhone}`,
+      `Address: ${order.customerAddress || "Not provided"}`,
       "",
-   `Total: ${order.total} MAD`,
+      ...order.items.map(
+        (item, index) =>
+          `${index + 1}. ${item.name}${item.size ? ` (Size: ${item.size})` : ""}\nQty: ${item.qty}\nPrice: ${item.price} MAD`
+      ),
+      "",
+      `Total: ${order.total} MAD`,
     ];
 
     const whatsappUrl = `https://wa.me/${businessPhone}?text=${encodeURIComponent(
@@ -147,6 +180,11 @@ router.post(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
+      const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "application/pdf"];
+      if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ message: "Only image or PDF files are allowed" });
+      }
+
       const b64 = Buffer.from(req.file.buffer).toString("base64");
       const dataURI = `data:${req.file.mimetype};base64,${b64}`;
 
@@ -172,14 +210,26 @@ router.post(
 );
 
 const NOTIFY_RECIPIENTS = [
-  process.env.EMAIL_USER,
+  "nizar.bourzaim2@gmail.com",
+  "rinifaza.store@gmail.com",
   "mehdibenmhand4@gmail.com",
   "rihab.bourzaim211@gmail.com",
 ].join(", ");
 
+// order fields (customer name/address, item names) are attacker-controlled
+// input reaching an HTML email body — escape before interpolating.
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function notifyOwnerOfProof(order) {
   const itemsList = order.items
-    .map((item) => `${item.name} (x${item.qty}) — ${item.price * item.qty} MAD`)
+    .map((item) => `${escapeHtml(item.name)}${item.size ? ` [Size: ${escapeHtml(item.size)}]` : ""} (x${item.qty}) — ${item.price * item.qty} MAD`)
     .join("<br>");
 
   const isPdf = /\.pdf($|\?)/i.test(order.paymentProofUrl);
@@ -195,10 +245,10 @@ function notifyOwnerOfProof(order) {
         <h2 style="color: #D4AF37; text-align: center;">New Payment Proof Submitted</h2>
         <p>A customer just completed checkout and uploaded proof of payment. Please review it in the admin panel.</p>
         <p>
-          <strong>Order Number:</strong> ${order.orderNumber}<br>
-          <strong>Customer:</strong> ${order.customerName}<br>
-          <strong>Phone:</strong> ${order.customerPhone}<br>
-          <strong>Address:</strong> ${order.customerAddress || "Not provided"}<br>
+          <strong>Order Number:</strong> ${escapeHtml(order.orderNumber)}<br>
+          <strong>Customer:</strong> ${escapeHtml(order.customerName)}<br>
+          <strong>Phone:</strong> ${escapeHtml(order.customerPhone)}<br>
+          <strong>Address:</strong> ${escapeHtml(order.customerAddress || "Not provided")}<br>
           <strong>Total:</strong> ${order.total} MAD
         </p>
         <p><strong>Items:</strong><br>${itemsList}</p>
@@ -296,7 +346,8 @@ router.get("/:id/download", async (req, res) => {
         currentY = 50;
       }
 
-      doc.text(item.name, 60, currentY);
+      const displayName = item.size ? `${item.name} (${item.size})` : item.name;
+      doc.text(displayName, 60, currentY);
       doc.text(item.qty.toString(), 300, currentY, { width: 50, align: "center" });
       doc.text(`${item.price} MAD`, 350, currentY, { width: 100, align: "right" });
       doc.text(`${item.price * item.qty} MAD`, 450, currentY, { width: 90, align: "right" });

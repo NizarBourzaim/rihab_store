@@ -25,6 +25,10 @@ const orderSchema = new mongoose.Schema(
         name: String,
         price: Number,
         qty: Number,
+        size: {
+          type: String,
+          default: "",
+        },
         image: String,
         isPreorder: {
           type: Boolean,

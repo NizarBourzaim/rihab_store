@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "../../context/LanguageContext";
+import BackButton from "../../components/BackButton";
 
 export default function AboutPage() {
   const { t } = useLanguage();
@@ -19,6 +20,7 @@ export default function AboutPage() {
       <div className="absolute bottom-[-120px] right-[-120px] w-[320px] h-[320px] bg-[rgba(212,175,55,0.08)] blur-3xl rounded-full"></div>
 
       <div className="container-custom relative z-10">
+        <BackButton fallbackUrl="/" />
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

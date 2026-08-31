@@ -90,7 +90,7 @@ async function appendOrderToGoogleSheets(order) {
 
     // Format items as a readable string
     const itemsStr = order.items
-      .map((item) => `${item.name} x${item.qty} (${item.price} MAD)`)
+      .map((item) => `${item.name}${item.size ? ` [${item.size}]` : ""} x${item.qty} (${item.price} MAD)`)
       .join(" | ");
 
     const row = [

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "../../context/LanguageContext";
 import { storeUserInfo } from "../../utils/userInfo";
+import BackButton from "../../components/BackButton";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -58,6 +59,8 @@ function VerifyEmailContent() {
   };
 
   const handleResend = async () => {
+    if (cooldown > 0 || resending) return;
+
     setError("");
     setMessage("");
     setResending(true);
@@ -69,7 +72,7 @@ function VerifyEmailContent() {
       setMessage(data.message || t("codeResent"));
       setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (err) {
-      setError(err.response?.data?.message || t("verificationFailed"));
+      setError(err.response?.data?.message || t("error"));
     } finally {
       setResending(false);
     }
@@ -77,6 +80,7 @@ function VerifyEmailContent() {
 
   return (
     <div className="max-w-md mx-auto p-8 mt-20 glass rounded-3xl text-white">
+      <BackButton fallbackUrl="/login" />
       <h1 className="text-3xl font-bold mb-4 text-gold-gradient">{t("verifyEmailTitle")}</h1>
 
       <p className="text-sm text-white/60 mb-6">

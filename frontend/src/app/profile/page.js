@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import API_URL from "../../utils/api";
 import { getStoredUserInfo, storeUserInfo, clearStoredUserInfo } from "../../utils/userInfo";
+import BackButton from "../../components/BackButton";
 
 export default function ProfilePage() {
   const [form, setForm] = useState({
@@ -102,7 +103,8 @@ export default function ProfilePage() {
     <section className="relative min-h-[85vh] flex items-center overflow-hidden py-16">
         <div className="container-custom relative z-10">
           <div className="max-w-2xl mx-auto glass rounded-[32px] p-8 md:p-10">
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-gold-gradient">
+            <BackButton fallbackUrl="/" />
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight text-gold-gradient">
               Profile Settings
             </h1>
 

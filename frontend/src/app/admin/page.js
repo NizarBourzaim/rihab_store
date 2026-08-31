@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import API_URL from "../../utils/api";
 import { getStoredUserInfo } from "../../utils/userInfo";
+import BackButton from "../../components/BackButton";
+
+const ALL_SIZES = ["S", "M", "L"];
 
 export default function AdminPage() {
   const [products, setProducts] = useState([]);
@@ -18,6 +21,7 @@ export default function AdminPage() {
     description: "",
     stock: "",
     preorderDate: "",
+    sizes: [],
   });
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState("");
@@ -126,8 +130,27 @@ export default function AdminPage() {
       description: "",
       stock: "",
       preorderDate: "",
+      sizes: [],
     });
     setEditingId(null);
+  };
+
+  const toggleSize = (size) => {
+    setForm((prev) => {
+      const currentSizes = Array.isArray(prev.sizes) ? prev.sizes : [];
+      const newSizes = currentSizes.includes(size)
+        ? currentSizes.filter((s) => s !== size)
+        : [...currentSizes, size];
+      return { ...prev, sizes: newSizes };
+    });
+  };
+
+  const handleSelectAllSizes = () => {
+    setForm((prev) => ({ ...prev, sizes: [...ALL_SIZES] }));
+  };
+
+  const handleClearSizes = () => {
+    setForm((prev) => ({ ...prev, sizes: [] }));
   };
 
   const handleSubmit = async (e) => {
@@ -180,6 +203,7 @@ export default function AdminPage() {
       description: product.description || "",
       stock: product.stock === null || product.stock === undefined ? "" : product.stock,
       preorderDate: product.preorderDate ? product.preorderDate.slice(0, 10) : "",
+      sizes: Array.isArray(product.sizes) ? product.sizes : [],
     });
     setSuccess("");
     setError("");
@@ -351,6 +375,7 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 text-white">
+      <BackButton fallbackUrl="/" />
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <h1 className="text-4xl font-bold text-gold-gradient tracking-tight">
           {userInfo?.isAdmin ? "Admin Dashboard" : "Order Management Dashboard"}
@@ -477,6 +502,59 @@ export default function AdminPage() {
             rows={4}
           />
 
+          {/* Available Sizes Selector */}
+          <div className="border border-white/10 bg-white/5 p-5 rounded-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-semibold text-white/80">
+                Available Sizes (XS to 4XL)
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAllSizes}
+                  className="text-xs text-[#D4AF37] hover:underline px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Select All
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearSizes}
+                  className="text-xs text-white/50 hover:underline px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2.5">
+              {ALL_SIZES.map((size) => {
+                const isSelected = form.sizes?.includes(size);
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => toggleSize(size)}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isSelected
+                        ? "bg-gradient-to-r from-[#BF953F] to-[#FBF5B7] text-black shadow-md scale-105"
+                        : "bg-white/5 hover:bg-white/10 text-white/50 hover:text-white border border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg className="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                    {size}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-white/40 mt-3">
+              Checked sizes will be active & selectable. Unchecked sizes will be displayed with a barred line-through.
+            </p>
+          </div>
+
           <div className="flex gap-4 mt-2">
             <button
               type="submit"
@@ -525,6 +603,23 @@ export default function AdminPage() {
               </p>
               <p className="font-bold mt-4 text-gold-gradient text-lg">{product.price} MAD</p>
 
+              {/* Sizes badges */}
+              <div className="mt-2 flex flex-wrap gap-1 items-center">
+                <span className="text-[11px] text-white/40 mr-1">Sizes:</span>
+                {Array.isArray(product.sizes) && product.sizes.length > 0 ? (
+                  product.sizes.map((s) => (
+                    <span
+                      key={s}
+                      className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D4AF37]/20 text-[#FBF5B7] border border-[#D4AF37]/30"
+                    >
+                      {s}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[10px] text-white/40 italic">None selected</span>
+                )}
+              </div>
+
               {(product.stock !== null && product.stock !== undefined) && (
                 <span
                   className={`mt-2 inline-block w-fit px-3 py-1 rounded-lg text-xs font-bold ${
@@ -539,7 +634,7 @@ export default function AdminPage() {
                 </span>
               )}
 
-              <div className="mt-3 flex gap-3">
+              <div className="mt-4 flex gap-3">
                 <button
                   onClick={() => handleEdit(product)}
                   className="flex-1 btn-secondary text-sm py-2 px-0 min-w-0"
@@ -842,6 +937,11 @@ export default function AdminPage() {
                       <div className="flex-grow">
                         <p className="font-semibold">
                           {item.name}
+                          {item.size && (
+                            <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#D4AF37]/20 text-[#FBF5B7] border border-[#D4AF37]/30 align-middle">
+                              Size: {item.size}
+                            </span>
+                          )}
                           {item.isPreorder && (
                             <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-600 text-white align-middle">
                               PREORDER{item.preorderDate ? ` — ${new Date(item.preorderDate).toLocaleDateString()}` : ""}

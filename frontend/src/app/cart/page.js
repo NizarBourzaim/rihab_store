@@ -6,7 +6,7 @@ import axios from "axios";
 import { useCart } from "../../context/CartContext";
 import API_URL from "../../utils/api";
 import bankDetails from "../../utils/bankDetails";
-
+import BackButton from "../../components/BackButton";
 import { useLanguage } from "../../context/LanguageContext";
 
 function CopyField({ label, value, t }) {
@@ -92,6 +92,7 @@ export default function CartPage() {
           name: item.name,
           price: Number(item.price || 0),
           qty: Number(item.qty || 1),
+          size: item.selectedSize || "",
           image: item.image || "",
         })),
         total,
@@ -141,6 +142,8 @@ export default function CartPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      <BackButton fallbackUrl="/products" />
+
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("cart")}</h1>
 
       {isSuccess ? (
@@ -283,57 +286,69 @@ export default function CartPage() {
       ) : (
         <>
           <div className="grid gap-5">
-            {cartItems.map((item) => (
-              <div
-                key={item._id}
-                className="glass rounded-3xl p-5 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-              >
-                <div className="flex items-center gap-5">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-24 h-24 object-cover rounded-2xl opacity-90"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center text-sm text-white/50">
-                      No image
-                    </div>
-                  )}
+            {cartItems.map((item) => {
+              const itemKey = item.cartItemId || item._id;
+              return (
+                <div
+                  key={itemKey}
+                  className="glass rounded-3xl p-5 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                >
+                  <div className="flex items-center gap-5">
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-24 h-24 object-cover rounded-2xl opacity-90"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center text-sm text-white/50">
+                        No image
+                      </div>
+                    )}
 
-                  <div>
-                    <h2 className="font-semibold text-xl">
-                      {item.name}
-                      {item.stock !== null && item.stock !== undefined && item.stock <= 0 && (
-                        <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-600 text-white align-middle">
-                          {t("preorderBadge")}
-                        </span>
+                    <div>
+                      <h2 className="font-semibold text-xl">
+                        {item.name}
+                        {item.stock !== null && item.stock !== undefined && item.stock <= 0 && (
+                          <span className="ml-2 inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-600 text-white align-middle">
+                            {t("preorderBadge")}
+                          </span>
+                        )}
+                      </h2>
+
+                      {item.selectedSize && (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-[#D4AF37]/20 text-[#FBF5B7] border border-[#D4AF37]/35">
+                            {t("size")}: {item.selectedSize}
+                          </span>
+                        </div>
                       )}
-                    </h2>
-                    <p className="text-white/60 mt-1 line-clamp-1">{item.description}</p>
-                    <p className="font-bold mt-2 text-gold-gradient">{item.price} {t("mad")}</p>
+
+                      <p className="text-white/60 mt-1 line-clamp-1">{item.description}</p>
+                      <p className="font-bold mt-2 text-gold-gradient">{item.price} {t("mad")}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="number"
+                      min="1"
+                      max={item.stock !== null && item.stock !== undefined && item.stock > 0 ? item.stock : undefined}
+                      value={item.qty}
+                      onChange={(e) => updateQty(itemKey, e.target.value)}
+                      className="border border-white/20 bg-white/5 rounded-2xl p-3 w-20 text-white text-center focus:border-[rgba(212,175,55,0.5)] outline-none"
+                    />
+
+                    <button
+                      onClick={() => removeFromCart(itemKey)}
+                      className="bg-red-600/80 hover:bg-red-600 text-white px-5 py-3 rounded-2xl transition-colors"
+                    >
+                      {t("remove")}
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4">
-                  <input
-                    type="number"
-                    min="1"
-                    max={item.stock !== null && item.stock !== undefined && item.stock > 0 ? item.stock : undefined}
-                    value={item.qty}
-                    onChange={(e) => updateQty(item._id, e.target.value)}
-                    className="border border-white/20 bg-white/5 rounded-2xl p-3 w-20 text-white text-center focus:border-[rgba(212,175,55,0.5)] outline-none"
-                  />
-
-                  <button
-                    onClick={() => removeFromCart(item._id)}
-                    className="bg-red-600/80 hover:bg-red-600 text-white px-5 py-3 rounded-2xl transition-colors"
-                  >
-                    {t("remove")}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mt-8 glass rounded-3xl p-8 text-white">

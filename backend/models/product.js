@@ -25,6 +25,10 @@ const productSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  sizes: {
+    type: [String],
+    default: [],
+  },
 });
 
 module.exports = mongoose.model("Product", productSchema);

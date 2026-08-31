@@ -5,6 +5,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import API_URL from "../../utils/api";
 import { useLanguage } from "../../context/LanguageContext";
+import BackButton from "../../components/BackButton";
 
 export default function RegisterPage() {
   const { t } = useLanguage();
@@ -39,7 +40,8 @@ export default function RegisterPage() {
     <section className="relative min-h-[85vh] flex items-center overflow-hidden py-16">
       <div className="container-custom relative z-10">
         <div className="max-w-md mx-auto glass rounded-[32px] p-8 md:p-10">
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-gold-gradient">
+          <BackButton fallbackUrl="/" />
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-gold-gradient">
             {t("joinRinifaza")}
           </h1>
 

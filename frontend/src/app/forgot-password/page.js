@@ -5,6 +5,7 @@ import axios from "axios";
 import API_URL from "../../utils/api";
 import Link from "next/link";
 import { useLanguage } from "../../context/LanguageContext";
+import BackButton from "../../components/BackButton";
 
 export default function ForgotPasswordPage() {
   const { t } = useLanguage();
@@ -31,6 +32,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="max-w-md mx-auto p-8 mt-20 glass rounded-3xl text-white">
+      <BackButton fallbackUrl="/login" />
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("forgotPassword")}</h1>
       <p className="text-white/60 mb-8 text-sm leading-6">
         {t("forgotPasswordInstructions")}

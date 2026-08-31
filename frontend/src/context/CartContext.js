@@ -38,31 +38,33 @@ export const CartProvider = ({ children }) => {
       ? product.stock
       : Infinity;
 
-  const addToCart = (product) => {
-    const exists = cartItems.find((item) => item._id === product._id);
+  const addToCart = (product, size) => {
+    const selectedSize = size || product.selectedSize || "";
+    const cartItemId = selectedSize ? `${product._id}-${selectedSize}` : product._id;
+    const exists = cartItems.find((item) => (item.cartItemId || item._id) === cartItemId);
     const cap = stockCap(product);
 
     if (exists) {
       setCartItems(
         cartItems.map((item) =>
-          item._id === product._id
+          (item.cartItemId || item._id) === cartItemId
             ? { ...item, qty: Math.min(item.qty + 1, cap) }
             : item
         )
       );
     } else {
-      setCartItems([...cartItems, { ...product, qty: Math.min(1, cap) }]);
+      setCartItems([...cartItems, { ...product, selectedSize, cartItemId, qty: Math.min(1, cap) }]);
     }
   };
 
-  const removeFromCart = (id) => {
-    setCartItems(cartItems.filter((item) => item._id !== id));
+  const removeFromCart = (cartItemId) => {
+    setCartItems(cartItems.filter((item) => (item.cartItemId || item._id) !== cartItemId));
   };
 
-  const updateQty = (id, qty) => {
+  const updateQty = (cartItemId, qty) => {
     setCartItems(
       cartItems.map((item) =>
-        item._id === id ? { ...item, qty: Math.min(Number(qty), stockCap(item)) } : item
+        (item.cartItemId || item._id) === cartItemId ? { ...item, qty: Math.min(Number(qty), stockCap(item)) } : item
       )
     );
   };

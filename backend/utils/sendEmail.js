@@ -1,20 +1,22 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail({ to, subject, html }) {
-  await transporter.sendMail({
-    from: `"Rinifaza Store" <${process.env.EMAIL_USER}>`,
-    to,
+  const recipients = Array.isArray(to)
+    ? to
+    : to.split(",").map((addr) => addr.trim()).filter(Boolean);
+
+  const { error } = await resend.emails.send({
+    from: "Rinifaza Store <onboarding@resend.dev>",
+    to: recipients,
     subject,
     html,
   });
+
+  if (error) {
+    throw new Error(error.message || "Failed to send email via Resend");
+  }
 }
 
 module.exports = { sendEmail };

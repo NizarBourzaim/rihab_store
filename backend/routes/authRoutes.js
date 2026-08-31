@@ -30,6 +30,13 @@ const codeLimiter = rateLimit({
   message: { message: "Too many attempts. Please try again later." },
 });
 
+// Guards against NoSQL injection: without this, a JSON body like
+// {"email": {"$ne": null}} would be used as-is in a Mongo query object,
+// matching arbitrary documents instead of the literal string intended.
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.length > 0;
+}
+
 function sendVerificationEmail(email, code) {
   return sendEmail({
     to: email,
@@ -54,6 +61,10 @@ router.post("/register", authLimiter, async (req, res) => {
 
     if (!name || !email || !password || !phone || !address) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (!isNonEmptyString(email) || !isNonEmptyString(password)) {
+      return res.status(400).json({ message: "Invalid request" });
     }
 
     if (password.length < 6) {
@@ -107,7 +118,7 @@ router.post("/verify-email", codeLimiter, async (req, res) => {
   try {
     const { email, code } = req.body;
 
-    if (!email || !code) {
+    if (!isNonEmptyString(email) || !isNonEmptyString(code)) {
       return res.status(400).json({ message: "Email and code are required" });
     }
 
@@ -158,6 +169,11 @@ router.post("/verify-email", codeLimiter, async (req, res) => {
 router.post("/resend-verification", codeLimiter, async (req, res) => {
   try {
     const { email } = req.body;
+
+    if (!isNonEmptyString(email)) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -185,6 +201,10 @@ router.post("/resend-verification", codeLimiter, async (req, res) => {
 router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!isNonEmptyString(email) || !isNonEmptyString(password)) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
     const user = await User.findOne({ email });
 
@@ -220,15 +240,22 @@ router.post("/login", authLimiter, async (req, res) => {
 router.post("/forgot-password", authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
+
+    if (!isNonEmptyString(email)) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate reset token
+    // Generate reset token — only the hash is stored, so a DB read alone
+    // can't be used to reset the account (same defense-in-depth as the
+    // email verification codes).
     const resetToken = crypto.randomBytes(20).toString("hex");
-    user.resetPasswordToken = resetToken;
+    user.resetPasswordToken = hashVerificationCode(resetToken);
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
 
     await user.save();
@@ -264,8 +291,12 @@ router.post("/reset-password", authLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 
+    if (!isNonEmptyString(token) || !isNonEmptyString(password)) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
     const user = await User.findOne({
-      resetPasswordToken: token,
+      resetPasswordToken: hashVerificationCode(token),
       resetPasswordExpires: { $gt: Date.now() },
     });
 

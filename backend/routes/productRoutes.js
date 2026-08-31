@@ -37,7 +37,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", protect, adminOnly, async (req, res) => {
   try {
-    const { name, price, image, description, stock, preorderDate } = req.body;
+    const { name, price, image, description, stock, preorderDate, sizes } = req.body;
 
     const product = await Product.create({
       name,
@@ -46,6 +46,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
       description,
       stock: parseStock(stock) ?? null,
       preorderDate: parseDate(preorderDate) ?? null,
+      sizes: Array.isArray(sizes) ? sizes : [],
     });
 
     res.status(201).json(product);
@@ -56,7 +57,7 @@ router.post("/", protect, adminOnly, async (req, res) => {
 
 router.put("/:id", protect, adminOnly, async (req, res) => {
   try {
-    const { name, price, image, description, stock, preorderDate } = req.body;
+    const { name, price, image, description, stock, preorderDate, sizes } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -74,6 +75,10 @@ router.put("/:id", protect, adminOnly, async (req, res) => {
 
     const parsedPreorderDate = parseDate(preorderDate);
     if (parsedPreorderDate !== undefined) product.preorderDate = parsedPreorderDate;
+
+    if (sizes !== undefined) {
+      product.sizes = Array.isArray(sizes) ? sizes : [];
+    }
 
     const updatedProduct = await product.save();
     res.json(updatedProduct);

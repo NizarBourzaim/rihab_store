@@ -5,6 +5,7 @@ import axios from "axios";
 import API_URL from "../../utils/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import BackButton from "../../components/BackButton";
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState("");
@@ -53,6 +54,7 @@ function ResetPasswordContent() {
 
   return (
     <div className="max-w-md mx-auto p-8 mt-20 glass rounded-3xl text-white">
+      <BackButton fallbackUrl="/login" />
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">New Password</h1>
       
       {message && (

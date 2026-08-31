@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const cors = require("cors");
+const helmet = require("helmet");
 const connectDB = require("./config/db");
 const productRoutes = require("./routes/productRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -13,6 +14,14 @@ connectDB();
 
 const app = express();
 
+// CSP is for HTML-serving apps, not much use on a JSON API, and it's easy to
+// accidentally break clients with it — skip it, keep the rest of helmet's headers.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000" }));
 app.use(express.json());
 

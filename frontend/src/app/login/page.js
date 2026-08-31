@@ -7,6 +7,7 @@ import API_URL from "../../utils/api";
 import Link from "next/link";
 import { useLanguage } from "../../context/LanguageContext";
 import { storeUserInfo } from "../../utils/userInfo";
+import BackButton from "../../components/BackButton";
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -40,6 +41,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto p-8 mt-10 glass rounded-3xl text-white">
+      <BackButton fallbackUrl="/" />
       <h1 className="text-3xl font-bold mb-6 text-gold-gradient">{t("login")}</h1>
 
       {error && (
