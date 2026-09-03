@@ -94,7 +94,7 @@ export const translations = {
     name: "Full Name",
     phone: "Phone Number",
     address: "Address",
-    orderSuccess: "Awaiting Payment",
+    orderSuccess: "Awaiting advance payment",
     orderConfirmed: "Order Successful!",
     orderNumber: "Your order number is",
     contactSoon: "We will contact you soon.",
