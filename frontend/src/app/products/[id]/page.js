@@ -6,21 +6,21 @@ export const dynamic = "force-static";
 
 export async function generateStaticParams() {
   try {
-    const { data } = await axios.get(`${API_URL}/api/products`);
+    const { data } = await axios.get(`${API_URL}/api/products`, { timeout: 4000 });
     if (!data || data.length === 0) return [{ id: "placeholder" }];
     
     return data.map((product) => ({
       id: product._id.toString(),
     }));
   } catch (error) {
-    console.error("Backend unreachable during build:", error.message);
+    console.warn("Backend unreachable during build, using placeholder:", error.message);
     return [{ id: "placeholder" }];
   }
 }
 
 async function getProduct(id) {
   try {
-    const { data } = await axios.get(`${API_URL}/api/products/${id}`);
+    const { data } = await axios.get(`${API_URL}/api/products/${id}`, { timeout: 4000 });
     return data;
   } catch {
     return null;

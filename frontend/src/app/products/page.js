@@ -7,10 +7,10 @@ export const dynamic = "force-static";
 
 async function getProducts() {
   try {
-    const { data } = await axios.get(`${API_URL}/api/products`);
+    const { data } = await axios.get(`${API_URL}/api/products`, { timeout: 4000 });
     return data;
   } catch (error) {
-    console.error("Failed to fetch products for SSG:", error.message);
+    console.warn("Failed to fetch products for SSG:", error.message);
     return [];
   }
 }
