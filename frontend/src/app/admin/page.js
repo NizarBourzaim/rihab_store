@@ -8,7 +8,7 @@ import API_URL from "../../utils/api";
 import { getStoredUserInfo } from "../../utils/userInfo";
 import BackButton from "../../components/BackButton";
 
-const ALL_SIZES = ["S", "M", "L"];
+const ALL_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"];
 
 export default function AdminPage() {
   const [products, setProducts] = useState([]);

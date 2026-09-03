@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -15,6 +15,7 @@ export default function Navbar() {
   const userInfo = useUserInfo();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const navRef = useRef(null);
 
   const totalQty = cartItems.reduce((sum, item) => sum + (item.qty || 0), 0);
 
@@ -22,6 +23,39 @@ export default function Navbar() {
     clearStoredUserInfo();
     window.location.href = "/";
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setIsLangOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsLangOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
 
   const languages = [
     { code: "en", label: "EN", flag: "🇬🇧" },
@@ -104,9 +138,20 @@ export default function Navbar() {
   );
 
   return (
-    <header className="w-full overflow-x-hidden border-b border-white/10 backdrop-blur sticky top-0 z-50">
-      <div className="container-custom flex justify-between items-center py-4">
-        <Link href="/" className="text-gold-gradient uppercase shrink-0" style={{ fontFamily: "'Cinzel', serif", fontSize: "clamp(0.9rem, 2.5vw, 1.15rem)", fontWeight: 600, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+    <header ref={navRef} className="w-full border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-50">
+      <div className="container-custom flex justify-between items-center py-3.5">
+        <Link
+          href="/"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="text-gold-gradient uppercase shrink-0"
+          style={{
+            fontFamily: "'Cinzel', serif",
+            fontSize: "clamp(0.95rem, 2.5vw, 1.2rem)",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            whiteSpace: "nowrap",
+          }}
+        >
           Rinifaza Store
         </Link>
 
@@ -131,6 +176,7 @@ export default function Navbar() {
               )}
               <Link href="/profile" className="text-white/70 hover:text-white transition-all">{userInfo.name}</Link>
               <button
+                type="button"
                 onClick={handleLogout}
                 className="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-3 py-1.5 rounded-lg transition-all"
               >
@@ -142,23 +188,27 @@ export default function Navbar() {
           {/* Language Switcher */}
           <div className="relative">
             <button 
+              type="button"
               onClick={() => setIsLangOpen(!isLangOpen)}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg text-white transition-all"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg text-white transition-all cursor-pointer"
             >
               <span>{languages.find(l => l.code === language)?.flag}</span>
               <span className="font-semibold">{languages.find(l => l.code === language)?.label}</span>
             </button>
             
             {isLangOpen && (
-              <div className="absolute top-full mt-2 right-0 bg-black/90 border border-white/10 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl z-[60] min-w-[120px]">
+              <div className="absolute top-full mt-2 right-0 rtl:right-auto rtl:left-0 bg-black/95 border border-white/15 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl z-[60] min-w-[120px]">
                 {languages.map((lang) => (
                   <button
+                    type="button"
                     key={lang.code}
                     onClick={() => {
                       changeLanguage(lang.code);
                       setIsLangOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gold/10 transition-colors text-left ${language === lang.code ? 'text-gold' : 'text-white/70'}`}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/10 transition-colors text-left rtl:text-right cursor-pointer ${
+                      language === lang.code ? 'text-[#D4AF37] font-bold' : 'text-white/70'
+                    }`}
                   >
                     <span>{lang.flag}</span>
                     <span className="font-medium">{lang.label}</span>
@@ -170,7 +220,7 @@ export default function Navbar() {
 
           {socialIcons()}
 
-          <Link href="/cart" className="relative text-xl hover:scale-110 transition-transform">
+          <Link href="/cart" className="relative text-xl hover:scale-110 transition-transform" aria-label="Cart">
             🛒
             {totalQty > 0 && (
               <span className="absolute -top-2 -right-3 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full ring-2 ring-black">
@@ -180,48 +230,68 @@ export default function Navbar() {
           </Link>
         </nav>
 
-        {/* Mobile Nav Toggle */}
-        <div className="md:hidden flex items-center gap-4">
+        {/* Mobile Controls */}
+        <div className="md:hidden flex items-center gap-2 sm:gap-3">
           {/* Mobile Language Switcher */}
           <div className="relative">
             <button 
+              type="button"
               onClick={() => setIsLangOpen(!isLangOpen)}
-              className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg text-white text-sm"
+              aria-label="Select language"
+              className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-xl text-white text-xs font-semibold transition-all cursor-pointer"
             >
               <span>{languages.find(l => l.code === language)?.flag}</span>
+              <span>{languages.find(l => l.code === language)?.label}</span>
             </button>
             {isLangOpen && (
-              <div className="absolute top-full mt-2 right-0 bg-black border border-white/10 rounded-xl overflow-hidden shadow-2xl z-[60] min-w-[100px]">
+              <div className="absolute top-full mt-2 right-0 rtl:right-auto rtl:left-0 bg-[#111] border border-white/15 rounded-xl overflow-hidden shadow-2xl backdrop-blur-xl z-[70] min-w-[110px]">
                 {languages.map((lang) => (
                   <button
+                    type="button"
                     key={lang.code}
                     onClick={() => {
                       changeLanguage(lang.code);
                       setIsLangOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gold/10 transition-colors"
+                    className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left rtl:text-right hover:bg-[#D4AF37]/10 transition-colors text-xs cursor-pointer ${
+                      language === lang.code ? 'text-[#D4AF37] font-bold' : 'text-white/80'
+                    }`}
                   >
                     <span>{lang.flag}</span>
-                    <span className="text-white text-sm">{lang.label}</span>
+                    <span>{lang.label}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          <Link href="/cart" className="relative text-xl mr-2">
+          {/* Cart button */}
+          <Link
+            href="/cart"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Shopping Cart"
+            className="relative p-2 text-xl hover:scale-105 active:scale-95 transition-transform"
+          >
             🛒
             {totalQty > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full ring-2 ring-black">
+              <span className="absolute top-0 right-0 bg-red-600 text-white font-bold text-[10px] min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full ring-2 ring-black">
                 {totalQty}
               </span>
             )}
           </Link>
+
+          {/* Hamburger / Close toggle */}
           <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-white focus:outline-none p-1"
+            type="button"
+            onClick={() => {
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+              setIsLangOpen(false);
+            }}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
+            className="p-2 text-white/90 hover:text-white rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors focus:outline-none cursor-pointer"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isMobileMenuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
@@ -232,38 +302,118 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Backdrop and Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl py-4 px-6 flex flex-col gap-4">
-          {socialIcons("border-b-0 border-r-0 border-t border-white/10 py-3")}
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("home")}</Link>
-          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("about")}</Link>
-          <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("products")}</Link>
-          <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 hover:text-gold-gradient transition-all">{t("cart")}</Link>
+        <>
+          <div
+            className="md:hidden fixed inset-0 top-[59px] bg-black/70 backdrop-blur-sm z-40 transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
 
-          {!userInfo ? (
-            <div className="flex flex-col gap-3 mt-2">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-2 bg-white/10 rounded-xl">{t("login")}</Link>
-              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center py-2 btn-main">{t("register")}</Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3 mt-2">
-              {(userInfo.isAdmin || userInfo.isOrderManager) && (
-                <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5 text-gold-gradient font-semibold">
-                  {userInfo.isAdmin ? t("adminDashboard") : t("orderManagementDashboard")}
-                </Link>
+          <div className="md:hidden absolute top-full left-0 w-full bg-[#0d0d0d]/98 backdrop-blur-2xl border-b border-white/10 shadow-2xl py-5 px-6 flex flex-col gap-2 z-50 max-h-[calc(100vh-70px)] overflow-y-auto">
+            <Link
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="py-2.5 border-b border-white/5 hover:text-gold-gradient font-medium text-base transition-all"
+            >
+              {t("home")}
+            </Link>
+            <Link
+              href="/about"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="py-2.5 border-b border-white/5 hover:text-gold-gradient font-medium text-base transition-all"
+            >
+              {t("about")}
+            </Link>
+            <Link
+              href="/products"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="py-2.5 border-b border-white/5 hover:text-gold-gradient font-medium text-base transition-all"
+            >
+              {t("products")}
+            </Link>
+            <Link
+              href="/cart"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="py-2.5 border-b border-white/5 hover:text-gold-gradient font-medium text-base flex items-center justify-between transition-all"
+            >
+              <span>{t("cart")}</span>
+              {totalQty > 0 && (
+                <span className="bg-[#D4AF37]/20 text-[#FBF5B7] border border-[#D4AF37]/35 text-xs px-2.5 py-0.5 rounded-full font-bold">
+                  {totalQty}
+                </span>
               )}
-              <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="py-2 border-b border-white/5">{t("profile")} ({userInfo.name})</Link>
-              <button
-                onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
-                className="text-center py-2 mt-2 bg-red-600/20 text-red-500 rounded-xl"
-              >
-                {t("logout")}
-              </button>
+            </Link>
+
+            {!userInfo ? (
+              <div className="flex flex-col gap-3 pt-3">
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-center py-2.5 bg-white/10 hover:bg-white/15 rounded-xl font-medium transition-colors"
+                >
+                  {t("login")}
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-center py-2.5 btn-main text-sm"
+                >
+                  {t("register")}
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 pt-3">
+                {(userInfo.isAdmin || userInfo.isOrderManager) && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-2.5 border-b border-white/5 text-gold-gradient font-semibold"
+                  >
+                    {userInfo.isAdmin ? t("adminDashboard") : t("orderManagementDashboard")}
+                  </Link>
+                )}
+                <Link
+                  href="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-2.5 border-b border-white/5 text-white/80"
+                >
+                  {t("profile")} ({userInfo.name})
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-center py-2.5 mt-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/20 rounded-xl font-medium transition-colors cursor-pointer"
+                >
+                  {t("logout")}
+                </button>
+              </div>
+            )}
+
+            {/* Social Icons inside Mobile Menu */}
+            <div className="pt-4 mt-3 border-t border-white/10 flex justify-center items-center gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={social.label}
+                  title={social.label}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/5 border border-white/10 transition-all ${social.color}`}
+                >
+                  {social.icon}
+                </a>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        </>
       )}
     </header>
   );
+
 }

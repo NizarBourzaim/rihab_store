@@ -17,8 +17,16 @@ export const CartProvider = ({ children }) => {
     const stored = localStorage.getItem("cartItems");
     if (stored) {
       setTimeout(() => {
-        setCartItems(JSON.parse(stored));
-        isLoaded.current = true;
+        try {
+          const parsed = JSON.parse(stored);
+          setCartItems(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          console.error("Failed to parse cartItems from localStorage", e);
+          localStorage.removeItem("cartItems");
+          setCartItems([]);
+        } finally {
+          isLoaded.current = true;
+        }
       }, 0);
     } else {
       isLoaded.current = true;

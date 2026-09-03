@@ -9,7 +9,7 @@ import API_URL from "../../../utils/api";
 import { useLanguage } from "../../../context/LanguageContext";
 import BackButton from "../../../components/BackButton";
 
-const ALL_SIZES = ["S", "M", "L"];
+const ALL_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"];
 
 export default function ProductDetailsClient({ initialProduct }) {
   const { t } = useLanguage();

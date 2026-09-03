@@ -115,7 +115,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setForm({ ...form, name: e.target.value })
                     }
-                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3"
+                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                     placeholder="Full Name"
                   />
 
@@ -125,7 +125,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setForm({ ...form, email: e.target.value })
                     }
-                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3"
+                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                     placeholder="Email Address"
                   />
 
@@ -135,7 +135,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setForm({ ...form, currentPassword: e.target.value })
                     }
-                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3"
+                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                     placeholder="Current Password"
                   />
 
@@ -145,7 +145,7 @@ export default function ProfilePage() {
                     onChange={(e) =>
                       setForm({ ...form, newPassword: e.target.value })
                     }
-                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3"
+                    className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                     placeholder="New Password"
                   />
                 </div>

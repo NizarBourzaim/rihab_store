@@ -1,7 +1,7 @@
 import "./globals.css";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { CartProvider } from "../context/CartContext";
-
 import { LanguageProvider } from "../context/LanguageContext";
 
 export const metadata = {
@@ -13,11 +13,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>
+      <body className="min-h-screen flex flex-col bg-black text-white">
         <LanguageProvider>
           <CartProvider>
             <Navbar />
-            <main>{children}</main>
+            <main className="flex-1">{children}</main>
+            <Footer />
           </CartProvider>
         </LanguageProvider>
       </body>

@@ -26,8 +26,17 @@ export default function RegisterPage() {
     setLoading(true);
     setMessage("");
 
+    if (!/^[5-7]\d{8}$/.test(form.phone)) {
+      setMessage(t("invalidPhone"));
+      setLoading(false);
+      return;
+    }
+
     try {
-      await axios.post(`${API_URL}/api/auth/register`, form);
+      await axios.post(`${API_URL}/api/auth/register`, {
+        ...form,
+        phone: `+212${form.phone}`,
+      });
 
       router.push(`/verify-email?email=${encodeURIComponent(form.email)}`);
     } catch (error) {
@@ -54,7 +63,7 @@ export default function RegisterPage() {
                   setForm({ ...form, name: e.target.value })
                 }
                 placeholder={t("enterFullName")}
-                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
+                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                 required
               />
 
@@ -65,7 +74,7 @@ export default function RegisterPage() {
                   setForm({ ...form, email: e.target.value })
                 }
                 placeholder={t("emailPlaceholder")}
-                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
+                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                 required
               />
 
@@ -76,20 +85,27 @@ export default function RegisterPage() {
                   setForm({ ...form, password: e.target.value })
                 }
                 placeholder={t("passwordPlaceholder")}
-                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
+                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all"
                 required
               />
 
-              <input
-                type="text"
-                value={form.phone}
-                onChange={(e) =>
-                  setForm({ ...form, phone: e.target.value })
-                }
-                placeholder={t("yourPhone")}
-                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50"
-                required
-              />
+              <div className="flex items-stretch rounded-2xl bg-black/40 border border-white/10 overflow-hidden focus-within:border-[rgba(212,175,55,0.5)] focus-within:ring-1 focus-within:ring-[rgba(212,175,55,0.5)] transition-all">
+                <span className="flex items-center px-4 text-white/50 bg-white/5 border-r border-white/10 select-none text-sm">
+                  +212
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={form.phone}
+                  maxLength={9}
+                  onChange={(e) =>
+                    setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 9) })
+                  }
+                  placeholder={t("yourPhone")}
+                  className="flex-1 min-w-0 bg-transparent px-4 py-3 text-white placeholder-white/50 outline-none"
+                  required
+                />
+              </div>
 
               <textarea
                 value={form.address}
@@ -98,7 +114,7 @@ export default function RegisterPage() {
                 }
                 placeholder={t("yourAddress")}
                 rows={3}
-                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 resize-none"
+                className="w-full rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-[rgba(212,175,55,0.5)] focus:ring-1 focus:ring-[rgba(212,175,55,0.5)] outline-none transition-all resize-none"
                 required
               />
             </div>

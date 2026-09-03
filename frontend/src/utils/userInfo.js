@@ -1,7 +1,14 @@
 export function getStoredUserInfo() {
   if (typeof window === "undefined") return null;
   const stored = localStorage.getItem("userInfo");
-  return stored ? JSON.parse(stored) : null;
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error("Failed to parse userInfo from localStorage", e);
+    localStorage.removeItem("userInfo");
+    return null;
+  }
 }
 
 export function storeUserInfo(data) {
