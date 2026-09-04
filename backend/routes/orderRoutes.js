@@ -370,7 +370,7 @@ router.get("/:id/download", async (req, res) => {
     // Delivery Notice
     currentY += 40;
     doc.fillColor("#000000").font("Helvetica-Bold").fontSize(10)
-       .text("Delivery: your order will be delivered within 48h to 72h of the drop.", 50, currentY, { align: "center", width: 500 });
+       .text("Delivery: your order will be delivered within 24h to 72h of the payment confirmation.", 50, currentY, { align: "center", width: 500 });
 
     // Footer Message
     doc.fillColor("#aaaaaa").fontSize(10).font("Helvetica-Oblique")
